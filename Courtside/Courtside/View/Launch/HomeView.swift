@@ -86,6 +86,11 @@ struct HomeView: View {
                 .padding(.top)
             }
             .navigationTitle("Courtside")
+            .sheet(isPresented: $showingGameSetup) {
+                NavigationStack {
+                    GameSetupView()
+                }
+            }
             .alert("Create a Team First",
                    isPresented: $showingTeamSetupFirst) {
                 NavigationLink("Create Team") {
