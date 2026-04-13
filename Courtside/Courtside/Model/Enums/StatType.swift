@@ -81,4 +81,18 @@ enum StatType: String, Codable, CaseIterable {
     var shortName: String {
         rawValue
     }
+
+    /// Which shot zones are valid for this stat type
+    var validShotZones: [ShotZone] {
+        switch self {
+        case .fieldGoalMade, .fieldGoalMissed:
+            // 2PT: paint + mid-range only
+            return ShotZone.allCases.filter { !$0.isThreePointZone }
+        case .threePointMade, .threePointMissed:
+            // 3PT: three-point zones only
+            return ShotZone.allCases.filter { $0.isThreePointZone }
+        default:
+            return []
+        }
+    }
 }

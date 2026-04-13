@@ -4,16 +4,29 @@ import SwiftData
 @Model
 final class StatEvent {
     var id: UUID = UUID()
-    var statType: StatType = StatType.fieldGoalMade
+    var statTypeRaw: String = StatType.fieldGoalMade.rawValue
     var isOpponentStat: Bool = false
-    var shotZone: ShotZone?
+    var shotZoneRaw: String?
     var period: Int = 1
     var timestamp: Date = Date()
     var sequenceNumber: Int = 0
     var isDeleted: Bool = false
 
-    var game: Game?
-    var player: Player?
+    var gameID: UUID?
+    var playerID: UUID?
+
+    var statType: StatType {
+        get { StatType(rawValue: statTypeRaw) ?? .fieldGoalMade }
+        set { statTypeRaw = newValue.rawValue }
+    }
+
+    var shotZone: ShotZone? {
+        get {
+            guard let raw = shotZoneRaw else { return nil }
+            return ShotZone(rawValue: raw)
+        }
+        set { shotZoneRaw = newValue?.rawValue }
+    }
 
     init(
         statType: StatType,
@@ -21,15 +34,15 @@ final class StatEvent {
         shotZone: ShotZone? = nil,
         period: Int,
         sequenceNumber: Int,
-        player: Player? = nil
+        playerID: UUID? = nil
     ) {
         self.id = UUID()
-        self.statType = statType
+        self.statTypeRaw = statType.rawValue
         self.isOpponentStat = isOpponentStat
-        self.shotZone = shotZone
+        self.shotZoneRaw = shotZone?.rawValue
         self.period = period
         self.timestamp = Date()
         self.sequenceNumber = sequenceNumber
-        self.player = player
+        self.playerID = playerID
     }
 }

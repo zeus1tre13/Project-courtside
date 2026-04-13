@@ -29,7 +29,7 @@ enum PreviewData {
         ]
 
         for player in players {
-            player.team = team
+            player.teamID = team.id
             container.mainContext.insert(player)
         }
 

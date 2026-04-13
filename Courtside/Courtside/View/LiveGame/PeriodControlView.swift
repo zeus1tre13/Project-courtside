@@ -9,7 +9,7 @@ struct PeriodControlView: View {
             HStack {
                 // My team
                 VStack(spacing: 2) {
-                    Text(viewModel.game.myTeam?.name ?? "Home")
+                    Text("Home")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

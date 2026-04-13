@@ -37,54 +37,66 @@ struct LiveGameView: View {
                 Divider()
 
                 // Main content area
-                ScrollView {
-                    // Player-first mode: show active lineup at top
-                    if game.statEntryMode == .playerFirst && viewModel.entryState == .idle {
-                        PlayerPickerView(
-                            players: viewModel.currentPlayers,
-                            title: "Select Player",
-                            onSelect: { viewModel.selectPlayer($0) },
-                            onCancel: {}
-                        )
-                    }
+                if game.statEntryMode == .playerFirst {
+                    // Player-first flow
+                    ScrollView {
+                        if viewModel.entryState == .idle {
+                            PlayerPickerView(
+                                players: viewModel.currentPlayers,
+                                title: "Select Player",
+                                onSelect: { viewModel.selectPlayer($0) },
+                                onCancel: {}
+                            )
+                        }
 
-                    // Show player picker when needed (stat-first flow)
-                    if viewModel.needsPlayerSelection {
-                        PlayerPickerView(
-                            players: viewModel.currentPlayers,
-                            title: "Who?",
-                            onSelect: { viewModel.selectPlayer($0) },
-                            onCancel: { viewModel.cancelEntry() }
-                        )
-                    }
+                        if case .playerSelected = viewModel.entryState {
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text("What did they do?")
+                                        .font(.headline)
+                                    Spacer()
+                                    Button("Cancel") { viewModel.cancelEntry() }
+                                        .font(.subheadline)
+                                }
+                                .padding(.horizontal)
 
-                    // Show stat buttons for player-first after player selected
-                    if case .playerSelected = viewModel.entryState {
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("What did they do?")
-                                    .font(.headline)
-                                Spacer()
-                                Button("Cancel") { viewModel.cancelEntry() }
-                                    .font(.subheadline)
+                                StatPadView(viewModel: viewModel)
                             }
-                            .padding(.horizontal)
+                        }
 
-                            StatPadView(viewModel: viewModel)
+                        if case .playerStatSelected = viewModel.entryState {
+                            Text("Select zone on court")
+                                .font(.headline)
+                                .padding()
                         }
                     }
-                }
+                } else {
+                    // Stat-first flow
+                    if viewModel.needsZoneSelection,
+                       let stat = viewModel.currentStatType {
+                        // Shot chart for zone selection
+                        ShotChartView(
+                            validZones: stat.validShotZones,
+                            onZoneSelected: { viewModel.selectZone($0) },
+                            onCancel: { viewModel.cancelEntry() }
+                        )
+                    } else if viewModel.needsPlayerSelection {
+                        ScrollView {
+                            PlayerPickerView(
+                                players: viewModel.currentPlayers,
+                                title: "Who?",
+                                onSelect: { viewModel.selectPlayer($0) },
+                                onCancel: { viewModel.cancelEntry() }
+                            )
+                        }
+                    } else {
+                        Spacer()
+                    }
 
-                Spacer(minLength: 0)
-
-                // Stat pad (stat-first default, at bottom for thumb reach)
-                if game.statEntryMode == .statFirst && !viewModel.needsPlayerSelection {
-                    if case .idle = viewModel.entryState {
+                    // Stat pad pinned at bottom
+                    if viewModel.isIdle {
                         StatPadView(viewModel: viewModel)
                             .padding(.bottom, 8)
-                    } else if case .statSelected(let stat, _) = viewModel.entryState,
-                              !stat.requiresShotZone {
-                        // Waiting for player selection, stat pad hidden
                     }
                 }
             }

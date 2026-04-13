@@ -8,11 +8,14 @@ struct GameSetupView: View {
     @Query(filter: #Predicate<Team> { $0.isMyTeam }, sort: \Team.name)
     private var myTeams: [Team]
 
+    @Query private var allPlayers: [Player]
+
     @State private var selectedTeam: Team?
     @State private var opponentName: String = ""
     @State private var gameFormat: GameFormat = .fourQuarters
     @State private var opponentTracking: OpponentTrackingLevel = .team
     @State private var statEntryMode: StatEntryMode = .statFirst
+    @State private var trackShotZones: Bool = true
     @State private var gameDate: Date = Date()
     @State private var showingLiveGame = false
     @State private var createdGame: Game?
@@ -24,7 +27,7 @@ struct GameSetupView: View {
                     HStack {
                         Text(myTeams[0].displayName)
                         Spacer()
-                        Text("\(myTeams[0].activePlayers.count) players")
+                        Text("\(playerCount(for: myTeams[0])) players")
                             .foregroundStyle(.secondary)
                     }
                     .onAppear { selectedTeam = myTeams[0] }
@@ -65,6 +68,14 @@ struct GameSetupView: View {
                 .labelsHidden()
 
                 Text(opponentTracking.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Shot Chart") {
+                Toggle("Track Shot Locations", isOn: $trackShotZones)
+
+                Text("Show a half-court after each shot to record where it was taken")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -110,10 +121,14 @@ struct GameSetupView: View {
         }
     }
 
+    private func playerCount(for team: Team) -> Int {
+        allPlayers.filter { $0.teamID == team.id && $0.isActive }.count
+    }
+
     private var canStartGame: Bool {
-        selectedTeam != nil &&
-        !opponentName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        (selectedTeam?.activePlayers.count ?? 0) >= 5
+        guard let team = selectedTeam else { return false }
+        return !opponentName.trimmingCharacters(in: .whitespaces).isEmpty &&
+               playerCount(for: team) >= 5
     }
 
     private func startGame() {
@@ -126,7 +141,8 @@ struct GameSetupView: View {
             opponentTrackingLevel: opponentTracking,
             statEntryMode: statEntryMode
         )
-        game.myTeam = team
+        game.myTeamID = team.id
+        game.trackShotZones = trackShotZones
 
         if opponentTracking == .individual {
             let oppTeam = Team(
@@ -134,7 +150,7 @@ struct GameSetupView: View {
                 isMyTeam: false
             )
             modelContext.insert(oppTeam)
-            game.opponentTeam = oppTeam
+            game.opponentTeamID = oppTeam.id
         }
 
         modelContext.insert(game)

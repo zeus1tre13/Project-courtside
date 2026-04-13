@@ -10,7 +10,7 @@ struct GameSummaryView: View {
                 // Score header
                 HStack {
                     VStack {
-                        Text(game.myTeam?.displayName ?? "My Team")
+                        Text("My Team")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Text("\(game.myTeamScore)")
@@ -89,7 +89,7 @@ struct PeriodScoresView: View {
 
             // My team row
             HStack {
-                Text(game.myTeam?.name ?? "My Team")
+                Text("My Team")
                     .frame(maxWidth: .infinity, alignment: .leading)
                 ForEach(Array(periods), id: \.self) { period in
                     Text("\(game.scoreForPeriod(period, isOpponent: false))")

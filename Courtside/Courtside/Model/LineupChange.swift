@@ -10,7 +10,7 @@ final class LineupChange {
     var playerInID: UUID = UUID()
     var playerOutID: UUID = UUID()
 
-    var game: Game?
+    var gameID: UUID?
 
     init(
         period: Int,

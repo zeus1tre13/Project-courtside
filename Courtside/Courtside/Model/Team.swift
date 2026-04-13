@@ -9,12 +9,6 @@ final class Team {
     var isMyTeam: Bool = true
     var createdAt: Date = Date()
 
-    @Relationship(deleteRule: .cascade, inverse: \Player.team)
-    var players: [Player] = []
-
-    @Relationship(inverse: \Game.myTeam)
-    var homeGames: [Game] = []
-
     init(name: String, schoolName: String? = nil, isMyTeam: Bool = true) {
         self.id = UUID()
         self.name = name
@@ -24,7 +18,11 @@ final class Team {
     }
 
     var activePlayers: [Player] {
-        players.filter { $0.isActive }.sorted { $0.jerseyNumber < $1.jerseyNumber }
+        guard let context = modelContext else { return [] }
+        let teamID = self.id
+        let predicate = #Predicate<Player> { $0.teamID == teamID && $0.isActive }
+        let descriptor = FetchDescriptor<Player>(predicate: predicate)
+        return (try? context.fetch(descriptor)) ?? []
     }
 
     var displayName: String {

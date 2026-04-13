@@ -10,11 +10,7 @@ struct UndoBanner: View {
                     Text(event.statType.displayName)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    if let player = event.player {
-                        Text(player.displayLabel)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    // TODO: show player name via query
                 }
 
                 Spacer()

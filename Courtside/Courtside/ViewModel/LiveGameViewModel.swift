@@ -48,7 +48,21 @@ final class LiveGameViewModel {
     var lastUndoableEvent: StatEvent?
 
     // Computed
+    var isIdle: Bool {
+        entryState == .idle
+    }
+
+    var currentStatType: StatType? {
+        switch entryState {
+        case .statSelected(let stat, _): return stat
+        case .zoneSelected(let stat, _, _): return stat
+        case .playerStatSelected(_, let stat): return stat
+        default: return nil
+        }
+    }
+
     var needsZoneSelection: Bool {
+        guard game.trackShotZones else { return false }
         switch entryState {
         case .statSelected(let stat, _):
             return stat.requiresShotZone
@@ -63,7 +77,9 @@ final class LiveGameViewModel {
         switch entryState {
         case .statSelected(let stat, let isOpp):
             if isOpp && game.opponentTrackingLevel == .team { return false }
-            return !stat.requiresShotZone
+            // If shot needs zone and zones are tracked, wait for zone first
+            if stat.requiresShotZone && game.trackShotZones { return false }
+            return true
         case .zoneSelected(_, _, let isOpp):
             if isOpp && game.opponentTrackingLevel == .team { return false }
             return true
@@ -74,7 +90,7 @@ final class LiveGameViewModel {
 
     var currentPlayers: [Player] {
         if isTrackingOpponent {
-            return game.opponentTeam?.activePlayers ?? []
+            return []  // TODO: restore when relationships are back
         }
         return activeLineup
     }
@@ -92,11 +108,19 @@ final class LiveGameViewModel {
     // MARK: - Setup
 
     private func setupInitialLineup() {
-        guard let team = game.myTeam else { return }
-        let allActive = team.activePlayers
-        // First 5 active players start on the floor
-        activeLineup = Array(allActive.prefix(Constants.defaultStartingLineupSize))
-        benchPlayers = Array(allActive.dropFirst(Constants.defaultStartingLineupSize))
+        guard let teamID = game.myTeamID else { return }
+        let predicate = #Predicate<Player> { $0.teamID == teamID && $0.isActive }
+        let descriptor = FetchDescriptor<Player>(predicate: predicate)
+        guard let players = try? modelContext.fetch(descriptor) else { return }
+
+        // First 5 start, rest on bench
+        if players.count >= 5 {
+            activeLineup = Array(players.prefix(5))
+            benchPlayers = Array(players.dropFirst(5))
+        } else {
+            activeLineup = players
+            benchPlayers = []
+        }
     }
 
     // MARK: - Stat Entry (Stat-First Flow)
@@ -183,10 +207,20 @@ final class LiveGameViewModel {
             shotZone: zone,
             period: game.currentPeriod,
             sequenceNumber: game.nextSequenceNumber,
-            player: player
+            playerID: player?.id
         )
-        event.game = game
+        event.gameID = game.id
         modelContext.insert(event)
+
+        // Update score
+        let points = stat.pointValue
+        if points > 0 {
+            if isOpponent {
+                game.opponentScore += points
+            } else {
+                game.myTeamScore += points
+            }
+        }
 
         // Undo stack
         undoStack.append(event)
@@ -204,6 +238,15 @@ final class LiveGameViewModel {
 
     func undoLastStat() {
         guard let last = undoStack.popLast() else { return }
+        // Reverse score
+        let points = last.statType.pointValue
+        if points > 0 {
+            if last.isOpponentStat {
+                game.opponentScore -= points
+            } else {
+                game.myTeamScore -= points
+            }
+        }
         last.isDeleted = true
         lastUndoableEvent = undoStack.last
         showUndoBanner = false
@@ -228,7 +271,7 @@ final class LiveGameViewModel {
             playerInID: playerIn.id,
             playerOutID: playerOut.id
         )
-        change.game = game
+        change.gameID = game.id
         modelContext.insert(change)
 
         activeLineup[outIndex] = playerIn

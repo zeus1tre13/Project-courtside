@@ -59,20 +59,20 @@ enum StatCalculator {
 
     static func boxScoreLine(
         for player: Player,
-        in game: Game,
+        from allEvents: [StatEvent],
         periods: Set<Int>? = nil
     ) -> BoxScoreLine {
-        let events = game.activeStatEvents
-            .filter { $0.player?.id == player.id && !$0.isOpponentStat }
+        let events = allEvents
+            .filter { $0.playerID == player.id && !$0.isOpponentStat && !$0.isDeleted }
         return computeLine(from: events, periods: periods)
     }
 
     static func teamBoxScoreLine(
-        for game: Game,
+        from allEvents: [StatEvent],
         isOpponent: Bool = false,
         periods: Set<Int>? = nil
     ) -> BoxScoreLine {
-        let events = isOpponent ? game.opponentEvents : game.myTeamEvents
+        let events = allEvents.filter { !$0.isDeleted && $0.isOpponentStat == isOpponent }
         return computeLine(from: events, periods: periods)
     }
 

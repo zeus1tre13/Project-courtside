@@ -3,8 +3,7 @@ import SwiftData
 
 struct TeamListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(filter: #Predicate<Team> { $0.isMyTeam },
-           sort: \Team.name)
+    @Query(sort: \Team.name)
     private var teams: [Team]
 
     @State private var showingAddTeam = false

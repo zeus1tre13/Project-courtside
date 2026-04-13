@@ -81,7 +81,7 @@ struct PlayerFormView: View {
                 lastName: trimmedLast,
                 jerseyNumber: trimmedNumber
             )
-            player.team = team
+            player.teamID = team.id
             modelContext.insert(player)
         }
 

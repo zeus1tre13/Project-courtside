@@ -15,9 +15,9 @@ struct TeamFormView: View {
     var body: some View {
         Form {
             Section("Team Info") {
-                TextField("Team Name", text: $name)
+                TextField("School / Organization", text: $schoolName)
                     .textContentType(.organizationName)
-                TextField("School / Organization (optional)", text: $schoolName)
+                TextField("Team Name (e.g. Varsity, JV) — optional", text: $name)
                     .textContentType(.organizationName)
             }
         }
@@ -33,7 +33,7 @@ struct TeamFormView: View {
                 Button(isEditing ? "Save" : "Create") {
                     saveTeam()
                 }
-                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(schoolName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
         .onAppear {
@@ -48,18 +48,22 @@ struct TeamFormView: View {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let trimmedSchool = schoolName.trimmingCharacters(in: .whitespaces)
 
+        // School is required, team name is optional
+        let teamName = trimmedName.isEmpty ? trimmedSchool : trimmedName
+
         if let existingTeam {
-            existingTeam.name = trimmedName
-            existingTeam.schoolName = trimmedSchool.isEmpty ? nil : trimmedSchool
+            existingTeam.name = teamName
+            existingTeam.schoolName = trimmedSchool
         } else {
             let team = Team(
-                name: trimmedName,
-                schoolName: trimmedSchool.isEmpty ? nil : trimmedSchool,
+                name: teamName,
+                schoolName: trimmedSchool,
                 isMyTeam: true
             )
             modelContext.insert(team)
         }
 
+        try? modelContext.save()
         dismiss()
     }
 }

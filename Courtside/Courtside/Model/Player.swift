@@ -9,10 +9,7 @@ final class Player {
     var jerseyNumber: String = ""
     var isActive: Bool = true
 
-    var team: Team?
-
-    @Relationship(inverse: \StatEvent.player)
-    var statEvents: [StatEvent] = []
+    var teamID: UUID?
 
     init(firstName: String, lastName: String, jerseyNumber: String, isActive: Bool = true) {
         self.id = UUID()

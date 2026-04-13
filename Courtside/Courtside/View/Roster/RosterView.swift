@@ -4,11 +4,16 @@ import SwiftData
 struct RosterView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var team: Team
+    @Query private var allPlayers: [Player]
 
     @State private var showingAddPlayer = false
 
+    private var teamPlayers: [Player] {
+        allPlayers.filter { $0.teamID == team.id }
+    }
+
     private var sortedPlayers: [Player] {
-        team.players.sorted {
+        teamPlayers.sorted {
             let num0 = Int($0.jerseyNumber) ?? 999
             let num1 = Int($1.jerseyNumber) ?? 999
             return num0 < num1
@@ -70,7 +75,7 @@ struct RosterView: View {
             }
         }
         .overlay {
-            if team.players.isEmpty {
+            if teamPlayers.isEmpty {
                 ContentUnavailableView {
                     Label("No Players", systemImage: "person")
                 } description: {

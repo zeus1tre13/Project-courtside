@@ -9,7 +9,7 @@ struct TeamDetailView: View {
 
     private var teamGames: [Game] {
         allGames
-            .filter { $0.myTeam?.id == team.id && $0.isComplete }
+            .filter { $0.myTeamID == team.id && $0.isComplete }
             .sorted { $0.date > $1.date }
     }
 
