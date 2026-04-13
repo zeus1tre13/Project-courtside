@@ -4,6 +4,11 @@ import SwiftData
 struct GameSummaryView: View {
     let game: Game
     @Query private var allTeams: [Team]
+    @Query private var allPlayers: [Player]
+    @Query private var allEvents: [StatEvent]
+
+    @State private var shareURL: URL?
+    @State private var showingShare = false
 
     private var myTeamName: String {
         guard let teamID = game.myTeamID else { return "My Team" }
@@ -69,6 +74,51 @@ struct GameSummaryView: View {
         }
         .navigationTitle("Game Summary")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    exportCSV()
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $showingShare) {
+            if let shareURL {
+                ShareSheet(items: [shareURL])
+                    .presentationDetents([.medium])
+            }
+        }
+    }
+
+    private func exportCSV() {
+        let gameEvents = allEvents.filter { $0.gameID == game.id }
+        let myPlayers: [Player] = {
+            guard let teamID = game.myTeamID else { return [] }
+            return allPlayers.filter { $0.teamID == teamID }
+        }()
+        let oppPlayers: [Player] = {
+            guard let teamID = game.opponentTeamID else { return [] }
+            return allPlayers.filter { $0.teamID == teamID }
+        }()
+
+        let csv = CSVExporter.exportBoxScore(
+            game: game,
+            myTeamName: myTeamName,
+            players: myPlayers,
+            opponentPlayers: oppPlayers,
+            events: gameEvents
+        )
+
+        if let url = CSVExporter.writeToFile(
+            csv: csv,
+            myTeamName: myTeamName,
+            opponentName: game.opponentName,
+            date: game.date
+        ) {
+            shareURL = url
+            showingShare = true
+        }
     }
 }
 

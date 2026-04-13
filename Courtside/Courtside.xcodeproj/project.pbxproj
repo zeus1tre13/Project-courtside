@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		73B1092BCDE7A1D3DFC68B59 /* BoxScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */; };
+		5F2D9A83B4E17C60D2A3F1E8 /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C4E12F5B390D7A1E82C4F /* CSVExporter.swift */; };
+		D3F1B7A9E2C84D503F6A91C2 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9A3D74C1F528B0E4D76A83 /* ShareSheet.swift */; };
 		A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */; };
 		B2A1F3E40C8D59A72E4B1063 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */; };
 		E9C3D7F52A1B84D63F0E9A27 /* OrientationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */; };
@@ -74,6 +76,8 @@
 		D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationManager.swift; sourceTree = "<group>"; };
 		C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamColor.swift; sourceTree = "<group>"; };
+		8A6C4E12F5B390D7A1E82C4F /* CSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExporter.swift; sourceTree = "<group>"; };
+		6E9A3D74C1F528B0E4D76A83 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		073ED475667D2DBF86231764 /* Courtside.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Courtside.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		08A818658E8033B10BA5193C /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		093F5FC60ACF346F0AB6C5FF /* SubstitutionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubstitutionSheet.swift; sourceTree = "<group>"; };
@@ -259,6 +263,7 @@
 				7DD6CBF9EB86883F4180738B /* StatCalculator.swift */,
 				33F0A0667DF84A19B3C27C91 /* GeminiConfig.swift */,
 				28294567A2EC477684A60726 /* RosterScanner.swift */,
+				8A6C4E12F5B390D7A1E82C4F /* CSVExporter.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -266,6 +271,7 @@
 		B74084828AD4B27A0515BC01 /* Export */ = {
 			isa = PBXGroup;
 			children = (
+				6E9A3D74C1F528B0E4D76A83 /* ShareSheet.swift */,
 			);
 			path = Export;
 			sourceTree = "<group>";
@@ -492,6 +498,8 @@
 				B2A1F3E40C8D59A72E4B1063 /* AppDelegate.swift in Sources */,
 				E9C3D7F52A1B84D63F0E9A27 /* OrientationManager.swift in Sources */,
 				A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */,
+				5F2D9A83B4E17C60D2A3F1E8 /* CSVExporter.swift in Sources */,
+				D3F1B7A9E2C84D503F6A91C2 /* ShareSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
