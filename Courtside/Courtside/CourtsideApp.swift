@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct CourtsideApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     @State private var container: ModelContainer?
     @State private var loadError: String?
 

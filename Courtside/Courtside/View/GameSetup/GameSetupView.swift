@@ -15,6 +15,8 @@ struct GameSetupView: View {
     @State private var gameFormat: GameFormat = .fourQuarters
     @State private var opponentTracking: OpponentTrackingLevel = .team
     @State private var trackShotZones: Bool = true
+    @State private var myTeamColor: TeamColor = .blue
+    @State private var opponentColor: TeamColor = .red
     @State private var gameDate: Date = Date()
     @State private var showingLiveGame = false
     @State private var createdGame: Game?
@@ -133,6 +135,22 @@ struct GameSetupView: View {
                 }
             }
 
+            Section("Team Colors") {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Your Team")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ColorPaletteRow(selected: $myTeamColor)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Opponent")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ColorPaletteRow(selected: $opponentColor)
+                }
+            }
+
             Section("Shot Chart") {
                 Toggle("Track Shot Locations", isOn: $trackShotZones)
 
@@ -213,6 +231,8 @@ struct GameSetupView: View {
         )
         game.myTeamID = team.id
         game.trackShotZones = trackShotZones
+        game.myTeamColorHex = myTeamColor.hex
+        game.opponentColorHex = opponentColor.hex
 
         if opponentTracking == .individual {
             let oppTeam = Team(
@@ -237,5 +257,33 @@ struct GameSetupView: View {
         modelContext.insert(game)
         createdGame = game
         showingLiveGame = true
+    }
+}
+
+struct ColorPaletteRow: View {
+    @Binding var selected: TeamColor
+
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6), spacing: 8) {
+            ForEach(TeamColor.allCases) { tc in
+                Circle()
+                    .fill(tc.color)
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Circle()
+                            .strokeBorder(.white, lineWidth: selected == tc ? 3 : 0)
+                    )
+                    .overlay(
+                        Circle()
+                            .strokeBorder(tc.color.opacity(0.8), lineWidth: selected == tc ? 2 : 0)
+                            .padding(2)
+                    )
+                    .scaleEffect(selected == tc ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.15), value: selected)
+                    .onTapGesture {
+                        selected = tc
+                    }
+            }
+        }
     }
 }

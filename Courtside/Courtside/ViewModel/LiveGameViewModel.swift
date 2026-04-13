@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import SwiftData
 import Observation
 
@@ -88,6 +89,17 @@ final class LiveGameViewModel {
     var myTeamScore: Int { game.myTeamScore }
     var opponentScore: Int { game.opponentScore }
     var periodLabel: String { game.periodLabel }
+    var myTeamColor: Color { Color(hex: game.myTeamColorHex) }
+    var opponentColor: Color { Color(hex: game.opponentColorHex) }
+    var activeColor: Color { isTrackingOpponent ? opponentColor : myTeamColor }
+
+    var myTeamName: String {
+        guard let teamID = game.myTeamID else { return "My Team" }
+        let predicate = #Predicate<Team> { $0.id == teamID }
+        let descriptor = FetchDescriptor<Team>(predicate: predicate)
+        guard let team = try? modelContext.fetch(descriptor).first else { return "My Team" }
+        return team.displayName
+    }
 
     init(game: Game, modelContext: ModelContext) {
         self.game = game

@@ -12,6 +12,8 @@ final class Game {
     var isComplete: Bool = false
     var entryModeRaw: String = StatEntryMode.statFirst.rawValue
     var trackShotZones: Bool = true
+    var myTeamColorHex: String = TeamColor.blue.hex
+    var opponentColorHex: String = TeamColor.red.hex
     var createdAt: Date = Date()
 
     var myTeamID: UUID?
@@ -66,6 +68,13 @@ final class Game {
     var opponentScore: Int = 0
 
     func scoreForPeriod(_ period: Int, isOpponent: Bool) -> Int {
-        0  // TODO: computed by ViewModel
+        guard let context = modelContext else { return 0 }
+        let gameID = self.id
+        let predicate = #Predicate<StatEvent> {
+            $0.gameID == gameID && $0.period == period && $0.isOpponentStat == isOpponent && !$0.isDeleted
+        }
+        let descriptor = FetchDescriptor<StatEvent>(predicate: predicate)
+        guard let events = try? context.fetch(descriptor) else { return 0 }
+        return events.reduce(0) { $0 + $1.statType.pointValue }
     }
 }

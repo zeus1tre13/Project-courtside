@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		73B1092BCDE7A1D3DFC68B59 /* BoxScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */; };
+		A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */; };
+		B2A1F3E40C8D59A72E4B1063 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */; };
+		E9C3D7F52A1B84D63F0E9A27 /* OrientationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */; };
 		00C7730FC3D2C2D0147455C7 /* RosterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6EBD5E3E6F87F013CE5FE /* RosterView.swift */; };
 		0544A5DDE806F291FB7BBA22 /* PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61816EC5BAEA1BECF023BEA7 /* PreviewData.swift */; };
 		1B8A393FC2EC443BF06116E5 /* StatCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DD6CBF9EB86883F4180738B /* StatCalculator.swift */; };
@@ -66,6 +70,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxScoreView.swift; sourceTree = "<group>"; };
+		D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationManager.swift; sourceTree = "<group>"; };
+		C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamColor.swift; sourceTree = "<group>"; };
 		073ED475667D2DBF86231764 /* Courtside.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Courtside.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		08A818658E8033B10BA5193C /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		093F5FC60ACF346F0AB6C5FF /* SubstitutionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubstitutionSheet.swift; sourceTree = "<group>"; };
@@ -125,6 +133,7 @@
 			children = (
 				8F9A05739AC4F06BF46FE5EB /* Assets.xcassets */,
 				53069AC5D5C2BCB787FC0506 /* Courtside.entitlements */,
+				D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */,
 				DF1B4A838B7D45305E9C82C0 /* CourtsideApp.swift */,
 				A835B4885BC6F04E8E42BD4D /* Model */,
 				303AF8BCA6BCBB4CD88AA64B /* Preview Content */,
@@ -168,6 +177,7 @@
 				947C6C7A5C8413100EC0DAF9 /* ShotZone.swift */,
 				9DC645BE21049935DAFD09EA /* StatEntryMode.swift */,
 				ECFA5B13DFEAE3B11C68F537 /* StatType.swift */,
+				C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -175,6 +185,7 @@
 		77F803867856ADC61C216B50 /* BoxScore */ = {
 			isa = PBXGroup;
 			children = (
+				AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */,
 			);
 			path = BoxScore;
 			sourceTree = "<group>";
@@ -216,6 +227,7 @@
 				FE9E0B2C769074062D3D9B74 /* AppearanceManager.swift */,
 				D852875E448B857C0124922B /* Constants.swift */,
 				61BD805397D6DEDDDCE34DB6 /* HapticManager.swift */,
+				F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -476,6 +488,10 @@
 				45A93956BCD0FA98BC4B9DDF /* TeamFormView.swift in Sources */,
 				D8B7120F232B28414E87A9A5 /* TeamListView.swift in Sources */,
 				C5A4C83266DABACB8DED769A /* UndoBanner.swift in Sources */,
+				73B1092BCDE7A1D3DFC68B59 /* BoxScoreView.swift in Sources */,
+				B2A1F3E40C8D59A72E4B1063 /* AppDelegate.swift in Sources */,
+				E9C3D7F52A1B84D63F0E9A27 /* OrientationManager.swift in Sources */,
+				A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -561,7 +577,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Courtside;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -631,7 +647,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Courtside;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;

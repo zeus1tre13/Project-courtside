@@ -83,6 +83,14 @@ struct LiveGameView: View {
             QuickAddOpponentView(viewModel: viewModel)
                 .presentationDetents([.medium])
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingBoxScore },
+            set: { viewModel.showingBoxScore = $0 }
+        )) {
+            NavigationStack {
+                BoxScoreView(game: game)
+            }
+        }
         .alert("End Game?", isPresented: Binding(
             get: { viewModel.showingEndGameConfirm },
             set: { viewModel.showingEndGameConfirm = $0 }

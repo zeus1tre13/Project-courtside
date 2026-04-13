@@ -9,7 +9,7 @@ struct PeriodControlView: View {
             HStack {
                 // My team
                 VStack(spacing: 2) {
-                    Text("Home")
+                    Text(viewModel.myTeamName)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -55,12 +55,14 @@ struct PeriodControlView: View {
             HStack(spacing: 12) {
                 // My Team / Opponent toggle
                 if viewModel.game.opponentTrackingLevel != .none {
-                    Picker("Team", selection: $viewModel.isTrackingOpponent) {
-                        Text("My Team").tag(false)
-                        Text("Opponent").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: 200)
+                    TeamToggle(
+                        myTeamName: viewModel.myTeamName,
+                        opponentName: viewModel.game.opponentName,
+                        myColor: viewModel.myTeamColor,
+                        oppColor: viewModel.opponentColor,
+                        isOpponent: $viewModel.isTrackingOpponent
+                    )
+                    .frame(maxWidth: 220)
                 }
 
                 Spacer()
@@ -92,5 +94,43 @@ struct PeriodControlView: View {
             }
             .padding(.horizontal)
         }
+    }
+}
+
+struct TeamToggle: View {
+    let myTeamName: String
+    let opponentName: String
+    var myColor: Color = .blue
+    var oppColor: Color = .red
+    @Binding var isOpponent: Bool
+
+    var body: some View {
+        HStack(spacing: 0) {
+            toggleButton(label: myTeamName, isSelected: !isOpponent, color: myColor) {
+                withAnimation(.easeInOut(duration: 0.2)) { isOpponent = false }
+            }
+            toggleButton(label: opponentName, isSelected: isOpponent, color: oppColor) {
+                withAnimation(.easeInOut(duration: 0.2)) { isOpponent = true }
+            }
+        }
+        .background(Color(.systemGray5))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func toggleButton(label: String, isSelected: Bool, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(.caption)
+                .fontWeight(isSelected ? .bold : .medium)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .frame(maxWidth: .infinity)
+                .background(isSelected ? color.opacity(0.2) : Color.clear)
+                .foregroundStyle(isSelected ? color : .secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+        }
+        .buttonStyle(.plain)
     }
 }

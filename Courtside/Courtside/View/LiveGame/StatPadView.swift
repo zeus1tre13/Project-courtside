@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct StatPadView: View {
-    @Bindable var viewModel: LiveGameViewModel
+    var viewModel: LiveGameViewModel
 
     private let shotStats: [(StatType, StatType)] = [
         (.fieldGoalMade, .fieldGoalMissed),
@@ -48,6 +48,8 @@ struct StatPadView: View {
             }
         }
         .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(viewModel.activeColor.opacity(0.06))
     }
 }
 
