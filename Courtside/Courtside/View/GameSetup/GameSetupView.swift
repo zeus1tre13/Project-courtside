@@ -14,11 +14,17 @@ struct GameSetupView: View {
     @State private var opponentName: String = ""
     @State private var gameFormat: GameFormat = .fourQuarters
     @State private var opponentTracking: OpponentTrackingLevel = .team
-    @State private var statEntryMode: StatEntryMode = .statFirst
     @State private var trackShotZones: Bool = true
     @State private var gameDate: Date = Date()
     @State private var showingLiveGame = false
     @State private var createdGame: Game?
+
+    // Opponent roster (inline quick-add)
+    @State private var opponentPlayers: [(number: String, firstName: String, lastName: String)] = []
+    @State private var oppNumber: String = ""
+    @State private var oppFirstName: String = ""
+    @State private var oppLastName: String = ""
+    @State private var showingScanRoster = false
 
     var body: some View {
         Form {
@@ -72,23 +78,65 @@ struct GameSetupView: View {
                     .foregroundStyle(.secondary)
             }
 
+            // Opponent roster — only when tracking individual players
+            if opponentTracking == .individual {
+                Section("Opponent Roster") {
+                    // Quick-add row
+                    HStack(spacing: 8) {
+                        TextField("#", text: $oppNumber)
+                            .keyboardType(.numberPad)
+                            .frame(width: 44)
+                        TextField("First", text: $oppFirstName)
+                            .autocorrectionDisabled()
+                        TextField("Last", text: $oppLastName)
+                            .autocorrectionDisabled()
+                        Button {
+                            addOpponentPlayer()
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.green)
+                        }
+                        .disabled(oppNumber.isEmpty || oppLastName.isEmpty)
+                    }
+
+                    // Added players
+                    ForEach(Array(opponentPlayers.enumerated()), id: \.offset) { index, player in
+                        HStack {
+                            Text("#\(player.number)")
+                                .fontWeight(.bold)
+                                .frame(width: 44)
+                            Text("\(player.firstName) \(player.lastName)")
+                            Spacer()
+                        }
+                    }
+                    .onDelete { offsets in
+                        opponentPlayers.remove(atOffsets: offsets)
+                    }
+
+                    // Scan button
+                    Button {
+                        showingScanRoster = true
+                    } label: {
+                        Label("Scan Roster from Photo", systemImage: "camera.viewfinder")
+                    }
+
+                    if opponentPlayers.isEmpty {
+                        Text("Add opponent players or scan a roster photo")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("\(opponentPlayers.count) players added")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section("Shot Chart") {
                 Toggle("Track Shot Locations", isOn: $trackShotZones)
 
                 Text("Show a half-court after each shot to record where it was taken")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("Stat Entry") {
-                Picker("Entry Mode", selection: $statEntryMode) {
-                    ForEach(StatEntryMode.allCases, id: \.self) { mode in
-                        Text(mode.displayName).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                Text(statEntryMode.description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -114,7 +162,19 @@ struct GameSetupView: View {
                 Button("Cancel") { dismiss() }
             }
         }
-        .fullScreenCover(isPresented: $showingLiveGame) {
+        .sheet(isPresented: $showingScanRoster) {
+            RosterScanView { scannedPlayers in
+                for player in scannedPlayers {
+                    opponentPlayers.append(player)
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showingLiveGame, onDismiss: {
+            // If the game was ended, dismiss setup back to HomeView
+            if createdGame?.isComplete == true {
+                dismiss()
+            }
+        }) {
             if let game = createdGame {
                 LiveGameView(game: game)
             }
@@ -131,6 +191,17 @@ struct GameSetupView: View {
                playerCount(for: team) >= 5
     }
 
+    private func addOpponentPlayer() {
+        let num = oppNumber.trimmingCharacters(in: .whitespaces)
+        let first = oppFirstName.trimmingCharacters(in: .whitespaces)
+        let last = oppLastName.trimmingCharacters(in: .whitespaces)
+        guard !num.isEmpty, !last.isEmpty else { return }
+        opponentPlayers.append((number: num, firstName: first, lastName: last))
+        oppNumber = ""
+        oppFirstName = ""
+        oppLastName = ""
+    }
+
     private func startGame() {
         guard let team = selectedTeam else { return }
 
@@ -138,8 +209,7 @@ struct GameSetupView: View {
             date: gameDate,
             format: gameFormat,
             opponentName: opponentName.trimmingCharacters(in: .whitespaces),
-            opponentTrackingLevel: opponentTracking,
-            statEntryMode: statEntryMode
+            opponentTrackingLevel: opponentTracking
         )
         game.myTeamID = team.id
         game.trackShotZones = trackShotZones
@@ -151,6 +221,17 @@ struct GameSetupView: View {
             )
             modelContext.insert(oppTeam)
             game.opponentTeamID = oppTeam.id
+
+            // Create opponent players
+            for opp in opponentPlayers {
+                let player = Player(
+                    firstName: opp.firstName,
+                    lastName: opp.lastName,
+                    jerseyNumber: opp.number
+                )
+                player.teamID = oppTeam.id
+                modelContext.insert(player)
+            }
         }
 
         modelContext.insert(game)

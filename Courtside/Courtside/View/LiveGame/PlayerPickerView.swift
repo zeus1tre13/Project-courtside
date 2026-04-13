@@ -3,8 +3,10 @@ import SwiftUI
 struct PlayerPickerView: View {
     let players: [Player]
     let title: String
+    var showAddButton: Bool = false
     let onSelect: (Player) -> Void
     let onCancel: () -> Void
+    var onAddPlayer: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
@@ -12,6 +14,14 @@ struct PlayerPickerView: View {
                 Text(title)
                     .font(.headline)
                 Spacer()
+                if showAddButton {
+                    Button {
+                        onAddPlayer?()
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .font(.title3)
+                    }
+                }
                 Button("Cancel") {
                     onCancel()
                 }

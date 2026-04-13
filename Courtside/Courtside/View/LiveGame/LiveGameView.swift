@@ -37,67 +37,31 @@ struct LiveGameView: View {
                 Divider()
 
                 // Main content area
-                if game.statEntryMode == .playerFirst {
-                    // Player-first flow
+                if viewModel.needsZoneSelection,
+                   let stat = viewModel.currentStatType {
+                    ShotChartView(
+                        validZones: stat.validShotZones,
+                        onZoneSelected: { viewModel.selectZone($0) },
+                        onCancel: { viewModel.cancelEntry() }
+                    )
+                } else if viewModel.needsPlayerSelection {
                     ScrollView {
-                        if viewModel.entryState == .idle {
-                            PlayerPickerView(
-                                players: viewModel.currentPlayers,
-                                title: "Select Player",
-                                onSelect: { viewModel.selectPlayer($0) },
-                                onCancel: {}
-                            )
-                        }
-
-                        if case .playerSelected = viewModel.entryState {
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Text("What did they do?")
-                                        .font(.headline)
-                                    Spacer()
-                                    Button("Cancel") { viewModel.cancelEntry() }
-                                        .font(.subheadline)
-                                }
-                                .padding(.horizontal)
-
-                                StatPadView(viewModel: viewModel)
-                            }
-                        }
-
-                        if case .playerStatSelected = viewModel.entryState {
-                            Text("Select zone on court")
-                                .font(.headline)
-                                .padding()
-                        }
-                    }
-                } else {
-                    // Stat-first flow
-                    if viewModel.needsZoneSelection,
-                       let stat = viewModel.currentStatType {
-                        // Shot chart for zone selection
-                        ShotChartView(
-                            validZones: stat.validShotZones,
-                            onZoneSelected: { viewModel.selectZone($0) },
-                            onCancel: { viewModel.cancelEntry() }
+                        PlayerPickerView(
+                            players: viewModel.currentPlayers,
+                            title: viewModel.isTrackingOpponent ? "Which opponent?" : "Who?",
+                            showAddButton: viewModel.isTrackingOpponent,
+                            onSelect: { viewModel.selectPlayer($0) },
+                            onCancel: { viewModel.cancelEntry() },
+                            onAddPlayer: { viewModel.showingAddOpponent = true }
                         )
-                    } else if viewModel.needsPlayerSelection {
-                        ScrollView {
-                            PlayerPickerView(
-                                players: viewModel.currentPlayers,
-                                title: "Who?",
-                                onSelect: { viewModel.selectPlayer($0) },
-                                onCancel: { viewModel.cancelEntry() }
-                            )
-                        }
-                    } else {
-                        Spacer()
                     }
+                }
 
-                    // Stat pad pinned at bottom
-                    if viewModel.isIdle {
-                        StatPadView(viewModel: viewModel)
-                            .padding(.bottom, 8)
-                    }
+                // Stat pad right below scoreboard
+                if viewModel.isIdle {
+                    StatPadView(viewModel: viewModel)
+                        .padding(.top, 8)
+                    Spacer(minLength: 0)
                 }
             }
 
@@ -111,6 +75,13 @@ struct LiveGameView: View {
         )) {
             SubstitutionSheet(viewModel: viewModel)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingAddOpponent },
+            set: { viewModel.showingAddOpponent = $0 }
+        )) {
+            QuickAddOpponentView(viewModel: viewModel)
+                .presentationDetents([.medium])
         }
         .alert("End Game?", isPresented: Binding(
             get: { viewModel.showingEndGameConfirm },

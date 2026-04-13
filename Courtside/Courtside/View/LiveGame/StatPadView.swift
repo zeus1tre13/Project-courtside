@@ -17,22 +17,8 @@ struct StatPadView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 12) {
-            // Other stats grid (top section)
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-            ], spacing: 8) {
-                ForEach(otherStats, id: \.self) { stat in
-                    StatButton(stat: stat, style: .secondary) {
-                        viewModel.selectStat(stat)
-                    }
-                }
-            }
-
-            Divider()
-
-            // Shot buttons (bottom, thumb-reachable)
+        VStack(spacing: 10) {
+            // Shot buttons first — right below scoreboard
             VStack(spacing: 8) {
                 ForEach(shotStats, id: \.0) { made, missed in
                     HStack(spacing: 8) {
@@ -42,6 +28,21 @@ struct StatPadView: View {
                         StatButton(stat: missed, style: .missed) {
                             viewModel.selectStat(missed)
                         }
+                    }
+                }
+            }
+
+            Divider()
+                .padding(.vertical, 4)
+
+            // Other stats below
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+            ], spacing: 8) {
+                ForEach(otherStats, id: \.self) { stat in
+                    StatButton(stat: stat, style: .secondary) {
+                        viewModel.selectStat(stat)
                     }
                 }
             }

@@ -7,6 +7,7 @@ struct RosterView: View {
     @Query private var allPlayers: [Player]
 
     @State private var showingAddPlayer = false
+    @State private var showingScanRoster = false
 
     private var teamPlayers: [Player] {
         allPlayers.filter { $0.teamID == team.id }
@@ -62,8 +63,17 @@ struct RosterView: View {
         .navigationTitle("Roster")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showingAddPlayer = true
+                Menu {
+                    Button {
+                        showingAddPlayer = true
+                    } label: {
+                        Label("Add Player", systemImage: "plus")
+                    }
+                    Button {
+                        showingScanRoster = true
+                    } label: {
+                        Label("Scan Roster", systemImage: "camera.viewfinder")
+                    }
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -72,6 +82,19 @@ struct RosterView: View {
         .sheet(isPresented: $showingAddPlayer) {
             NavigationStack {
                 PlayerFormView(team: team)
+            }
+        }
+        .sheet(isPresented: $showingScanRoster) {
+            RosterScanView { scannedPlayers in
+                for p in scannedPlayers {
+                    let player = Player(
+                        firstName: p.firstName,
+                        lastName: p.lastName,
+                        jerseyNumber: p.number
+                    )
+                    player.teamID = team.id
+                    modelContext.insert(player)
+                }
             }
         }
         .overlay {

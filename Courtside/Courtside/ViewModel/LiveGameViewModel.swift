@@ -4,12 +4,8 @@ import Observation
 
 enum StatEntryState: Equatable {
     case idle
-    // Stat-first flow
     case statSelected(StatType, isOpponent: Bool)
     case zoneSelected(StatType, ShotZone, isOpponent: Bool)
-    // Player-first flow
-    case playerSelected(Player)
-    case playerStatSelected(Player, StatType)
 
     static func == (lhs: StatEntryState, rhs: StatEntryState) -> Bool {
         switch (lhs, rhs) {
@@ -19,10 +15,6 @@ enum StatEntryState: Equatable {
             return lt == rt && lo == ro
         case let (.zoneSelected(lt, lz, lo), .zoneSelected(rt, rz, ro)):
             return lt == rt && lz == rz && lo == ro
-        case let (.playerSelected(lp), .playerSelected(rp)):
-            return lp.id == rp.id
-        case let (.playerStatSelected(lp, lt), .playerStatSelected(rp, rt)):
-            return lp.id == rp.id && lt == rt
         default:
             return false
         }
@@ -37,6 +29,7 @@ final class LiveGameViewModel {
     var entryState: StatEntryState = .idle
     var activeLineup: [Player] = []
     var benchPlayers: [Player] = []
+    var opponentPlayers: [Player] = []
     var isTrackingOpponent: Bool = false
     var showingSubstitution: Bool = false
     var showingBoxScore: Bool = false
@@ -56,7 +49,6 @@ final class LiveGameViewModel {
         switch entryState {
         case .statSelected(let stat, _): return stat
         case .zoneSelected(let stat, _, _): return stat
-        case .playerStatSelected(_, let stat): return stat
         default: return nil
         }
     }
@@ -65,8 +57,6 @@ final class LiveGameViewModel {
         guard game.trackShotZones else { return false }
         switch entryState {
         case .statSelected(let stat, _):
-            return stat.requiresShotZone
-        case .playerStatSelected(_, let stat):
             return stat.requiresShotZone
         default:
             return false
@@ -90,7 +80,7 @@ final class LiveGameViewModel {
 
     var currentPlayers: [Player] {
         if isTrackingOpponent {
-            return []  // TODO: restore when relationships are back
+            return opponentPlayers
         }
         return activeLineup
     }
@@ -108,6 +98,7 @@ final class LiveGameViewModel {
     // MARK: - Setup
 
     private func setupInitialLineup() {
+        // My team players
         guard let teamID = game.myTeamID else { return }
         let predicate = #Predicate<Player> { $0.teamID == teamID && $0.isActive }
         let descriptor = FetchDescriptor<Player>(predicate: predicate)
@@ -120,6 +111,14 @@ final class LiveGameViewModel {
         } else {
             activeLineup = players
             benchPlayers = []
+        }
+
+        // Opponent players (if tracking individually)
+        if game.opponentTrackingLevel == .individual,
+           let oppTeamID = game.opponentTeamID {
+            let oppPredicate = #Predicate<Player> { $0.teamID == oppTeamID }
+            let oppDescriptor = FetchDescriptor<Player>(predicate: oppPredicate)
+            opponentPlayers = (try? modelContext.fetch(oppDescriptor)) ?? []
         }
     }
 
@@ -150,12 +149,7 @@ final class LiveGameViewModel {
     }
 
     func selectZone(_ zone: ShotZone) {
-        guard case .statSelected(let stat, let isOpp) = entryState else {
-            guard case .playerStatSelected(let player, let stat) = entryState else { return }
-            // Player-first flow: zone is last step, commit
-            commitStat(stat: stat, zone: zone, player: player, isOpponent: false)
-            return
-        }
+        guard case .statSelected(let stat, let isOpp) = entryState else { return }
 
         if isOpp && game.opponentTrackingLevel == .team {
             commitStat(stat: stat, zone: zone, player: nil, isOpponent: true)
@@ -166,36 +160,13 @@ final class LiveGameViewModel {
 
     func selectPlayer(_ player: Player) {
         switch entryState {
-        // Stat-first: player is final step
         case .statSelected(let stat, let isOpp):
             commitStat(stat: stat, zone: nil, player: player, isOpponent: isOpp)
         case .zoneSelected(let stat, let zone, let isOpp):
             commitStat(stat: stat, zone: zone, player: player, isOpponent: isOpp)
-
-        // Player-first: player is first step
-        case .idle:
-            if game.statEntryMode == .playerFirst {
-                entryState = .playerSelected(player)
-                HapticManager.selectionChanged()
-            }
-
         default:
             break
         }
-    }
-
-    // MARK: - Stat Entry (Player-First Flow)
-
-    func selectStatForPlayer(_ stat: StatType) {
-        guard case .playerSelected(let player) = entryState else { return }
-
-        if stat.requiresShotZone {
-            entryState = .playerStatSelected(player, stat)
-        } else {
-            commitStat(stat: stat, zone: nil, player: player, isOpponent: false)
-        }
-
-        HapticManager.selectionChanged()
     }
 
     // MARK: - Commit
@@ -278,6 +249,22 @@ final class LiveGameViewModel {
         benchPlayers[inIndex] = playerOut
 
         HapticManager.selectionChanged()
+    }
+
+    // MARK: - Add Opponent Player (during game)
+
+    var showingAddOpponent: Bool = false
+
+    func addOpponentPlayer(firstName: String, lastName: String, jerseyNumber: String) {
+        guard let oppTeamID = game.opponentTeamID else { return }
+        let player = Player(
+            firstName: firstName,
+            lastName: lastName,
+            jerseyNumber: jerseyNumber
+        )
+        player.teamID = oppTeamID
+        modelContext.insert(player)
+        opponentPlayers.append(player)
     }
 
     // MARK: - Period
