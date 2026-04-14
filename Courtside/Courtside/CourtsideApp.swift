@@ -8,27 +8,42 @@ struct CourtsideApp: App {
     @State private var container: ModelContainer?
     @State private var loadError: String?
     @State private var theme = ThemeManager()
+    @State private var showSplash = true
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if let container {
-                    HomeView()
-                        .modelContainer(container)
-                } else if let loadError {
-                    ContentUnavailableView(
-                        "Database Error",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text(loadError)
-                    )
-                } else {
-                    ProgressView("Loading…")
+            ZStack {
+                Group {
+                    if let container {
+                        HomeView()
+                            .modelContainer(container)
+                    } else if let loadError {
+                        ContentUnavailableView(
+                            "Database Error",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(loadError)
+                        )
+                    } else {
+                        Color(.systemBackground)
+                    }
                 }
-            }
-            .environment(\.theme, theme)
-            .preferredColorScheme(theme.preferredColorScheme)
-            .task {
-                await loadContainer()
+                .environment(\.theme, theme)
+                .preferredColorScheme(theme.preferredColorScheme)
+                .task {
+                    await loadContainer()
+                }
+
+                if showSplash {
+                    SplashView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                        .task {
+                            try? await Task.sleep(nanoseconds: 1_200_000_000)
+                            withAnimation(.easeOut(duration: 0.35)) {
+                                showSplash = false
+                            }
+                        }
+                }
             }
         }
     }
@@ -86,6 +101,21 @@ struct CourtsideApp: App {
         } catch {
             await MainActor.run { loadError = "\(error)" }
             print("❌ All ModelContainer attempts failed: \(error)")
+        }
+    }
+}
+
+// MARK: - Splash
+
+private struct SplashView: View {
+    var body: some View {
+        GeometryReader { geo in
+            Image("CourtsideSplash")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+                .ignoresSafeArea()
         }
     }
 }

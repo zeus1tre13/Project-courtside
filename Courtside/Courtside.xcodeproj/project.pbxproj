@@ -597,7 +597,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Courtside;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -667,7 +667,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Courtside;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -722,6 +722,7 @@
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = P6YCWG5ZT2;
+				INFOPLIST_FILE = Courtside/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Courtside accesses your photos to scan roster sheets";
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
@@ -758,6 +759,7 @@
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = P6YCWG5ZT2;
+				INFOPLIST_FILE = Courtside/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Courtside accesses your photos to scan roster sheets";
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
