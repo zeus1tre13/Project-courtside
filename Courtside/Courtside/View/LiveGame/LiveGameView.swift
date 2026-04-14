@@ -4,6 +4,7 @@ import SwiftData
 struct LiveGameView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
 
     let game: Game
     @State private var viewModel: LiveGameViewModel?
@@ -124,6 +125,16 @@ struct LiveGameView: View {
                 .font(.headline)
 
             Spacer()
+
+            // Gym mode toggle
+            Button {
+                theme.isGymMode.toggle()
+                HapticManager.statRecorded()
+            } label: {
+                Image(systemName: theme.isGymMode ? "sun.max.fill" : "sun.max")
+                    .font(.body)
+                    .foregroundStyle(theme.isGymMode ? .orange : .secondary)
+            }
 
             // Box score
             Button {

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		73B1092BCDE7A1D3DFC68B59 /* BoxScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */; };
+		BE1D1750CA0DEF5C0E0B0A01 /* BoxScoreEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED17E537270FFACE5DB4C5D6 /* BoxScoreEditSheet.swift */; };
+		5E771E65BF11DFACE00CAFE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E771E65FE11EFEFACED0001 /* SettingsView.swift */; };
 		5F2D9A83B4E17C60D2A3F1E8 /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C4E12F5B390D7A1E82C4F /* CSVExporter.swift */; };
 		D3F1B7A9E2C84D503F6A91C2 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9A3D74C1F528B0E4D76A83 /* ShareSheet.swift */; };
 		A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */; };
@@ -73,6 +75,8 @@
 
 /* Begin PBXFileReference section */
 		AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxScoreView.swift; sourceTree = "<group>"; };
+		ED17E537270FFACE5DB4C5D6 /* BoxScoreEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxScoreEditSheet.swift; sourceTree = "<group>"; };
+		5E771E65FE11EFEFACED0001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D4E7A92B1F3C68E50A7D2B14 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1B8E64D3C9A07F28D5E1A40 /* OrientationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationManager.swift; sourceTree = "<group>"; };
 		C8E2A1F93D7B06E45A1C8D20 /* TeamColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamColor.swift; sourceTree = "<group>"; };
@@ -190,6 +194,7 @@
 			isa = PBXGroup;
 			children = (
 				AA10527DD8914F05FE615ED1 /* BoxScoreView.swift */,
+				ED17E537270FFACE5DB4C5D6 /* BoxScoreEditSheet.swift */,
 			);
 			path = BoxScore;
 			sourceTree = "<group>";
@@ -204,9 +209,18 @@
 				248E2AA899FBA1264FAAD949 /* Launch */,
 				E3F90632EE6AEC7E80562F9D /* LiveGame */,
 				E448486BA80C4C35ADA0D7DD /* Roster */,
+				5E771E6500670400F11DEFAC /* Settings */,
 				CC7B3F9FC85E367394ECBE00 /* Team */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		5E771E6500670400F11DEFAC /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				5E771E65FE11EFEFACED0001 /* SettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		7D6C2E3FA1FD24A64FF50B59 /* CourtsideTests */ = {
@@ -495,6 +509,8 @@
 				D8B7120F232B28414E87A9A5 /* TeamListView.swift in Sources */,
 				C5A4C83266DABACB8DED769A /* UndoBanner.swift in Sources */,
 				73B1092BCDE7A1D3DFC68B59 /* BoxScoreView.swift in Sources */,
+				BE1D1750CA0DEF5C0E0B0A01 /* BoxScoreEditSheet.swift in Sources */,
+				5E771E65BF11DFACE00CAFE1 /* SettingsView.swift in Sources */,
 				B2A1F3E40C8D59A72E4B1063 /* AppDelegate.swift in Sources */,
 				E9C3D7F52A1B84D63F0E9A27 /* OrientationManager.swift in Sources */,
 				A1D4F8B72E3C95A10F6B7D83 /* TeamColor.swift in Sources */,

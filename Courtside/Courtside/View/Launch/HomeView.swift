@@ -12,6 +12,7 @@ struct HomeView: View {
 
     @State private var showingGameSetup = false
     @State private var showingTeamSetupFirst = false
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -76,10 +77,22 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("Courtside")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
             .sheet(isPresented: $showingGameSetup) {
                 NavigationStack {
                     GameSetupView()
                 }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
             .alert("Create a Team First",
                    isPresented: $showingTeamSetupFirst) {

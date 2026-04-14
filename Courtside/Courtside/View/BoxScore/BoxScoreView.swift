@@ -3,10 +3,19 @@ import SwiftData
 
 struct BoxScoreView: View {
     let game: Game
+    @Environment(\.theme) private var theme
     @Query private var allEvents: [StatEvent]
     @Query private var allPlayers: [Player]
 
     @State private var showingOpponent = false
+    @State private var editTarget: EditTarget?
+
+    private struct EditTarget: Identifiable {
+        let id = UUID()
+        let player: Player?
+        let cell: BoxScoreCell
+        let isOpponent: Bool
+    }
 
     private var gameEvents: [StatEvent] {
         allEvents.filter { $0.gameID == game.id && !$0.isDeleted }
@@ -61,7 +70,7 @@ struct BoxScoreView: View {
                         if line.points > 0 || line.totalRebounds > 0 || line.assists > 0 ||
                            line.turnovers > 0 || line.steals > 0 || line.blocks > 0 ||
                            line.fouls > 0 || line.fieldGoalsAttempted > 0 {
-                            playerRow(player: player, line: line)
+                            playerRow(player: player, line: line, isOpponent: isOpp)
                             Divider()
                         }
                     }
@@ -78,7 +87,7 @@ struct BoxScoreView: View {
                             line.turnovers > 0 || line.steals > 0 || line.blocks > 0 ||
                             line.fouls > 0 || line.fieldGoalsAttempted > 0
                         if !hasStats {
-                            playerRow(player: player, line: line, dimmed: true)
+                            playerRow(player: player, line: line, isOpponent: isOpp, dimmed: true)
                             Divider()
                         }
                     }
@@ -90,6 +99,14 @@ struct BoxScoreView: View {
         }
         .navigationTitle("Box Score")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $editTarget) { target in
+            BoxScoreEditSheet(
+                game: game,
+                player: target.player,
+                cell: target.cell,
+                isOpponent: target.isOpponent
+            )
+        }
         .onAppear {
             OrientationManager.shared.allowLandscape = true
         }
@@ -123,7 +140,7 @@ struct BoxScoreView: View {
         .foregroundStyle(.secondary)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .background(theme.secondaryBackground)
     }
 
     private func statHeader(_ text: String) -> some View {
@@ -133,32 +150,50 @@ struct BoxScoreView: View {
 
     // MARK: - Player Row
 
-    private func playerRow(player: Player, line: BoxScoreLine, dimmed: Bool = false) -> some View {
+    private func playerRow(player: Player, line: BoxScoreLine, isOpponent: Bool, dimmed: Bool = false) -> some View {
         HStack(spacing: 0) {
-            HStack(spacing: 4) {
-                Text("#\(player.jerseyNumber)")
-                    .fontWeight(.bold)
-                    .frame(width: 30, alignment: .leading)
-                Text(player.shortName)
-                    .lineLimit(1)
+            Button {
+                editTarget = EditTarget(player: player, cell: .allStats, isOpponent: isOpponent)
+            } label: {
+                HStack(spacing: 4) {
+                    Text("#\(player.jerseyNumber)")
+                        .fontWeight(.bold)
+                        .frame(width: 30, alignment: .leading)
+                    Text(player.shortName)
+                        .lineLimit(1)
+                }
+                .frame(width: 100, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(width: 100, alignment: .leading)
+            .buttonStyle(.plain)
 
-            statCell("\(line.points)", highlight: line.points > 0)
-            statCell(shotString(line.fieldGoalsMade, line.fieldGoalsAttempted))
-            statCell(shotString(line.threePointMade, line.threePointAttempted))
-            statCell(shotString(line.freeThrowsMade, line.freeThrowsAttempted))
-            statCell("\(line.totalRebounds)")
-            statCell("\(line.assists)")
-            statCell("\(line.turnovers)")
-            statCell("\(line.steals)")
-            statCell("\(line.blocks)")
-            statCell("\(line.fouls)")
+            tappableStatCell("\(line.points)", player: player, cell: .points, isOpponent: isOpponent, highlight: line.points > 0)
+            tappableStatCell(shotString(line.fieldGoalsMade, line.fieldGoalsAttempted), player: player, cell: .fieldGoals, isOpponent: isOpponent)
+            tappableStatCell(shotString(line.threePointMade, line.threePointAttempted), player: player, cell: .threePoints, isOpponent: isOpponent)
+            tappableStatCell(shotString(line.freeThrowsMade, line.freeThrowsAttempted), player: player, cell: .freeThrows, isOpponent: isOpponent)
+            tappableStatCell("\(line.totalRebounds)", player: player, cell: .rebounds, isOpponent: isOpponent)
+            tappableStatCell("\(line.assists)", player: player, cell: .assists, isOpponent: isOpponent)
+            tappableStatCell("\(line.turnovers)", player: player, cell: .turnovers, isOpponent: isOpponent)
+            tappableStatCell("\(line.steals)", player: player, cell: .steals, isOpponent: isOpponent)
+            tappableStatCell("\(line.blocks)", player: player, cell: .blocks, isOpponent: isOpponent)
+            tappableStatCell("\(line.fouls)", player: player, cell: .fouls, isOpponent: isOpponent)
         }
         .font(.caption)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .opacity(dimmed ? 0.4 : 1.0)
+    }
+
+    private func tappableStatCell(_ text: String, player: Player?, cell: BoxScoreCell, isOpponent: Bool, highlight: Bool = false) -> some View {
+        Button {
+            editTarget = EditTarget(player: player, cell: cell, isOpponent: isOpponent)
+        } label: {
+            Text(text)
+                .fontWeight(highlight ? .semibold : .regular)
+                .frame(width: 44, alignment: .center)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func statCell(_ text: String, highlight: Bool = false) -> some View {
@@ -179,26 +214,42 @@ struct BoxScoreView: View {
             isOpponent: isOpponent
         )
 
+        // Per design: opponent totals are editable only when no individual rows exist
+        // (team-level opponent tracking). Otherwise edit at the player rows.
+        let totalsEditable: Bool = {
+            if !isOpponent { return true }
+            return !hasOpponentPlayers
+        }()
+
         return HStack(spacing: 0) {
             Text("TOTAL")
                 .fontWeight(.bold)
                 .frame(width: 100, alignment: .leading)
 
-            statCell("\(line.points)", highlight: true)
-            statCell(shotString(line.fieldGoalsMade, line.fieldGoalsAttempted))
-            statCell(shotString(line.threePointMade, line.threePointAttempted))
-            statCell(shotString(line.freeThrowsMade, line.freeThrowsAttempted))
-            statCell("\(line.totalRebounds)")
-            statCell("\(line.assists)")
-            statCell("\(line.turnovers)")
-            statCell("\(line.steals)")
-            statCell("\(line.blocks)")
-            statCell("\(line.fouls)")
+            totalCell("\(line.points)", cell: .points, isOpponent: isOpponent, editable: totalsEditable, highlight: true)
+            totalCell(shotString(line.fieldGoalsMade, line.fieldGoalsAttempted), cell: .fieldGoals, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell(shotString(line.threePointMade, line.threePointAttempted), cell: .threePoints, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell(shotString(line.freeThrowsMade, line.freeThrowsAttempted), cell: .freeThrows, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.totalRebounds)", cell: .rebounds, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.assists)", cell: .assists, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.turnovers)", cell: .turnovers, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.steals)", cell: .steals, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.blocks)", cell: .blocks, isOpponent: isOpponent, editable: totalsEditable)
+            totalCell("\(line.fouls)", cell: .fouls, isOpponent: isOpponent, editable: totalsEditable)
         }
         .font(.caption)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .background(theme.secondaryBackground)
+    }
+
+    @ViewBuilder
+    private func totalCell(_ text: String, cell: BoxScoreCell, isOpponent: Bool, editable: Bool, highlight: Bool = false) -> some View {
+        if editable {
+            tappableStatCell(text, player: nil, cell: cell, isOpponent: isOpponent, highlight: highlight)
+        } else {
+            statCell(text, highlight: highlight)
+        }
     }
 
     // MARK: - Helpers

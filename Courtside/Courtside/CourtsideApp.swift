@@ -7,6 +7,7 @@ struct CourtsideApp: App {
 
     @State private var container: ModelContainer?
     @State private var loadError: String?
+    @State private var theme = ThemeManager()
 
     var body: some Scene {
         WindowGroup {
@@ -24,6 +25,8 @@ struct CourtsideApp: App {
                     ProgressView("Loading…")
                 }
             }
+            .environment(\.theme, theme)
+            .preferredColorScheme(theme.preferredColorScheme)
             .task {
                 await loadContainer()
             }
