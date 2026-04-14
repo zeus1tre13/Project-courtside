@@ -42,18 +42,24 @@ struct CourtsideApp: App {
             LineupChange.self,
         ])
 
-        // Try persistent storage first
+        let cloudKitContainerID = "iCloud.com.xciv.courtside"
+
+        // Try CloudKit-synced persistent storage first
         do {
-            let config = ModelConfiguration(isStoredInMemoryOnly: false)
+            let config = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private(cloudKitContainerID)
+            )
             let c = try ModelContainer(for: schema, configurations: config)
             await MainActor.run { container = c }
-            print("✅ ModelContainer loaded (persistent)")
+            print("✅ ModelContainer loaded (CloudKit private)")
             return
         } catch {
-            print("⚠️ Persistent store failed: \(error)")
-            // Delete stale store and retry
-            let config = ModelConfiguration(isStoredInMemoryOnly: false)
-            let url = config.url
+            print("⚠️ CloudKit store failed: \(error)")
+            // Delete stale store and retry without CloudKit — local-only so the app still works
+            let localConfig = ModelConfiguration(isStoredInMemoryOnly: false)
+            let url = localConfig.url
             let dir = url.deletingLastPathComponent()
             let name = url.lastPathComponent
             for suffix in ["", "-shm", "-wal"] {
@@ -62,12 +68,12 @@ struct CourtsideApp: App {
                 )
             }
             do {
-                let c = try ModelContainer(for: schema, configurations: config)
+                let c = try ModelContainer(for: schema, configurations: localConfig)
                 await MainActor.run { container = c }
-                print("✅ ModelContainer loaded after store reset")
+                print("✅ ModelContainer loaded local-only after store reset")
                 return
             } catch {
-                print("❌ Persistent store failed even after reset: \(error)")
+                print("❌ Local store failed even after reset: \(error)")
             }
         }
 
