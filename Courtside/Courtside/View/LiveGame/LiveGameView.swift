@@ -14,11 +14,67 @@ struct LiveGameView: View {
             if let viewModel {
                 liveGameContent(viewModel: viewModel)
             } else {
-                ProgressView()
+                loadingSkeleton
                     .onAppear {
                         viewModel = LiveGameViewModel(game: game, modelContext: modelContext)
                     }
             }
+        }
+    }
+
+    private var loadingSkeleton: some View {
+        VStack(spacing: 0) {
+            // Placeholder top bar
+            HStack {
+                Text("Loading…")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+
+            Divider()
+
+            // Scoreboard shape mimic
+            HStack {
+                VStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 80, height: 10)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 60, height: 36)
+                }
+                .frame(maxWidth: .infinity)
+
+                VStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 40, height: 18)
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 50, height: 20)
+                }
+
+                VStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 80, height: 10)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 60, height: 36)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding()
+            .redacted(reason: .placeholder)
+
+            Spacer()
+
+            ProgressView()
+                .controlSize(.small)
+                .padding(.bottom, 40)
         }
     }
 

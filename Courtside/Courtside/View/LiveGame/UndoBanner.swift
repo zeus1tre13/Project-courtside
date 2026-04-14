@@ -27,6 +27,7 @@ struct UndoBanner: View {
                         .background(Color.orange)
                         .clipShape(Capsule())
                 }
+                .buttonStyle(PressableButtonStyle())
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

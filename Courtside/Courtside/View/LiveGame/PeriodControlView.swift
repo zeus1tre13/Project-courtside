@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PeriodControlView: View {
     @Bindable var viewModel: LiveGameViewModel
+    @ScaledMetric(relativeTo: .largeTitle) private var scoreSize: CGFloat = 36
 
     var body: some View {
         VStack(spacing: 8) {
@@ -15,7 +16,7 @@ struct PeriodControlView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                     Text("\(viewModel.myTeamScore)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: scoreSize, weight: .bold, design: .rounded))
                         .monospacedDigit()
                 }
                 .frame(maxWidth: .infinity)
@@ -37,7 +38,7 @@ struct PeriodControlView: View {
                             .background(Color(.systemGray5))
                             .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableButtonStyle())
                 }
 
                 // Opponent
@@ -48,7 +49,7 @@ struct PeriodControlView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                     Text("\(viewModel.opponentScore)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: scoreSize, weight: .bold, design: .rounded))
                         .monospacedDigit()
                 }
                 .frame(maxWidth: .infinity)

@@ -7,6 +7,8 @@ struct GameSummaryView: View {
     @Query private var allPlayers: [Player]
     @Query private var allEvents: [StatEvent]
 
+    @ScaledMetric(relativeTo: .largeTitle) private var scoreSize: CGFloat = 48
+
     @State private var shareURL: URL?
     @State private var showingShare = false
 
@@ -30,7 +32,7 @@ struct GameSummaryView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                         Text("\(game.myTeamScore)")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: scoreSize, weight: .bold))
                             .monospacedDigit()
                             .foregroundStyle(myColor)
                     }
@@ -52,7 +54,7 @@ struct GameSummaryView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                         Text("\(game.opponentScore)")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: scoreSize, weight: .bold))
                             .monospacedDigit()
                             .foregroundStyle(oppColor)
                     }

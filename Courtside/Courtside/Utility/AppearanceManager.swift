@@ -74,3 +74,16 @@ extension EnvironmentValues {
         set { self[ThemeManagerKey.self] = newValue }
     }
 }
+
+// MARK: - Shared Button Styles
+
+/// Subtle press feedback — scales to 96% and dims to 85% opacity on press.
+/// Use on any tappable label that doesn't already have a visible pressed state.
+struct PressableButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+    }
+}

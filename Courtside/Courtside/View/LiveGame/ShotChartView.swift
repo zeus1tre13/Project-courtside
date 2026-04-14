@@ -67,7 +67,8 @@ struct ShotChartView: View {
                         } else {
                             // Dimmed, non-tappable zone
                             Text(zone.shortLabel)
-                                .font(.system(size: 10))
+                                .font(.system(size: 12, weight: .medium))
+                                .multilineTextAlignment(.center)
                                 .foregroundStyle(.tertiary)
                                 .frame(width: zoneRect.width, height: zoneRect.height)
                                 .position(x: zoneRect.midX, y: zoneRect.midY)
@@ -102,7 +103,8 @@ private struct ZoneButton: View {
     var body: some View {
         Button(action: action) {
             Text(zone.shortLabel)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
+                .minimumScaleFactor(0.8)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(isHighlighted ? .white : .primary)
                 .frame(width: rect.width, height: rect.height)
@@ -231,18 +233,18 @@ private struct CourtFill: Shape {
 extension ShotZone {
     var shortLabel: String {
         switch self {
-        case .paintLeft: return "Paint\nL"
-        case .paintRight: return "Paint\nR"
-        case .midLeftBaseline: return "Mid\nL Base"
-        case .midLeftElbow: return "L\nElbow"
-        case .midFreeThrow: return "Mid\nFT"
-        case .midRightElbow: return "R\nElbow"
-        case .midRightBaseline: return "Mid\nR Base"
-        case .threeLeftCorner: return "3\nL Cor"
-        case .threeLeftWing: return "3\nL Wing"
-        case .threeTopOfKey: return "3 Top"
-        case .threeRightWing: return "3\nR Wing"
-        case .threeRightCorner: return "3\nR Cor"
+        case .paintLeft: return "Paint L"
+        case .paintRight: return "Paint R"
+        case .midLeftBaseline: return "Baseline L"
+        case .midLeftElbow: return "Elbow L"
+        case .midFreeThrow: return "FT"
+        case .midRightElbow: return "Elbow R"
+        case .midRightBaseline: return "Baseline R"
+        case .threeLeftCorner: return "Corner L"
+        case .threeLeftWing: return "Wing L"
+        case .threeTopOfKey: return "Top"
+        case .threeRightWing: return "Wing R"
+        case .threeRightCorner: return "Corner R"
         }
     }
 }
