@@ -278,9 +278,13 @@ struct ColorPaletteRow: View {
                             .strokeBorder(tc.color.opacity(0.8), lineWidth: selected == tc ? 2 : 0)
                             .padding(2)
                     )
+                    .shadow(color: selected == tc ? tc.color.opacity(0.5) : .clear, radius: 6)
                     .scaleEffect(selected == tc ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.15), value: selected)
+                    .animation(.easeInOut(duration: 0.1), value: selected)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
                     .onTapGesture {
+                        HapticManager.selectionChanged()
                         selected = tc
                     }
             }

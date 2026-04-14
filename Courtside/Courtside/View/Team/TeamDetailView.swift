@@ -3,6 +3,7 @@ import SwiftData
 
 struct TeamDetailView: View {
     @Bindable var team: Team
+    @Environment(\.theme) private var theme
     @State private var showingEditTeam = false
 
     @Query private var allGames: [Game]
@@ -58,8 +59,14 @@ struct TeamDetailView: View {
             // Games
             Section("Games") {
                 if teamGames.isEmpty {
-                    Text("No games yet")
-                        .foregroundStyle(.secondary)
+                    HStack {
+                        Spacer()
+                        Label("No games yet", systemImage: "calendar.badge.clock")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                            .padding(.vertical, 8)
+                        Spacer()
+                    }
                 } else {
                     ForEach(teamGames) { game in
                         NavigationLink {
@@ -77,7 +84,8 @@ struct TeamDetailView: View {
                                 let won = game.myTeamScore > game.opponentScore
                                 Text("\(game.myTeamScore)-\(game.opponentScore)")
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(won ? .green : .red)
+                                    .monospacedDigit()
+                                    .foregroundStyle(won ? theme.winColor : theme.lossColor)
                             }
                         }
                     }

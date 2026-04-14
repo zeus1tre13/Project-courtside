@@ -50,6 +50,16 @@ final class ThemeManager {
     var border: Color {
         isGymMode ? Color(white: 0.15) : Color(.separator)
     }
+
+    /// Win color — darker, higher-contrast green in gym mode.
+    var winColor: Color {
+        isGymMode ? Color(red: 0.0, green: 0.5, blue: 0.0) : .green
+    }
+
+    /// Loss color — darker, higher-contrast red in gym mode.
+    var lossColor: Color {
+        isGymMode ? Color(red: 0.7, green: 0.0, blue: 0.0) : .red
+    }
 }
 
 // MARK: - Environment

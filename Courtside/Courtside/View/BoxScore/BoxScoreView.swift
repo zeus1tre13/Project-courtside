@@ -190,6 +190,7 @@ struct BoxScoreView: View {
         } label: {
             Text(text)
                 .fontWeight(highlight ? .semibold : .regular)
+                .monospacedDigit()
                 .frame(width: 44, alignment: .center)
                 .contentShape(Rectangle())
         }
@@ -199,6 +200,7 @@ struct BoxScoreView: View {
     private func statCell(_ text: String, highlight: Bool = false) -> some View {
         Text(text)
             .fontWeight(highlight ? .semibold : .regular)
+            .monospacedDigit()
             .frame(width: 44, alignment: .center)
     }
 

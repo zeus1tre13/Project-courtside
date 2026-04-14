@@ -28,8 +28,10 @@ struct GameSummaryView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                         Text("\(game.myTeamScore)")
                             .font(.system(size: 48, weight: .bold))
+                            .monospacedDigit()
                             .foregroundStyle(myColor)
                     }
                     .frame(maxWidth: .infinity)
@@ -48,8 +50,10 @@ struct GameSummaryView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                         Text("\(game.opponentScore)")
                             .font(.system(size: 48, weight: .bold))
+                            .monospacedDigit()
                             .foregroundStyle(oppColor)
                     }
                     .frame(maxWidth: .infinity)
@@ -159,10 +163,12 @@ struct PeriodScoresView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 ForEach(Array(periods), id: \.self) { period in
                     Text("\(game.scoreForPeriod(period, isOpponent: false))")
+                        .monospacedDigit()
                         .frame(width: 40)
                 }
                 Text("\(game.myTeamScore)")
                     .fontWeight(.bold)
+                    .monospacedDigit()
                     .foregroundStyle(myColor)
                     .frame(width: 40)
             }
@@ -180,10 +186,12 @@ struct PeriodScoresView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 ForEach(Array(periods), id: \.self) { period in
                     Text("\(game.scoreForPeriod(period, isOpponent: true))")
+                        .monospacedDigit()
                         .frame(width: 40)
                 }
                 Text("\(game.opponentScore)")
                     .fontWeight(.bold)
+                    .monospacedDigit()
                     .foregroundStyle(oppColor)
                     .frame(width: 40)
             }

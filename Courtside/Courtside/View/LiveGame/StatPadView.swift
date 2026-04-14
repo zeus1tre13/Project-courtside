@@ -23,9 +23,11 @@ struct StatPadView: View {
                 ForEach(shotStats, id: \.0) { made, missed in
                     HStack(spacing: 8) {
                         StatButton(stat: made, style: .made) {
+                            HapticManager.statRecorded()
                             viewModel.selectStat(made)
                         }
                         StatButton(stat: missed, style: .missed) {
+                            HapticManager.statRecorded()
                             viewModel.selectStat(missed)
                         }
                     }
@@ -42,6 +44,7 @@ struct StatPadView: View {
             ], spacing: 8) {
                 ForEach(otherStats, id: \.self) { stat in
                     StatButton(stat: stat, style: .secondary) {
+                        HapticManager.statRecorded()
                         viewModel.selectStat(stat)
                     }
                 }

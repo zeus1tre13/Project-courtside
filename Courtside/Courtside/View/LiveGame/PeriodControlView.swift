@@ -13,8 +13,10 @@ struct PeriodControlView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text("\(viewModel.myTeamScore)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .monospacedDigit()
                 }
                 .frame(maxWidth: .infinity)
 
@@ -44,8 +46,10 @@ struct PeriodControlView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text("\(viewModel.opponentScore)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .monospacedDigit()
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -76,6 +80,7 @@ struct PeriodControlView: View {
                         .padding(8)
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 3, y: 1)
                 }
                 .buttonStyle(.plain)
 
@@ -88,6 +93,8 @@ struct PeriodControlView: View {
                         .padding(8)
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 3, y: 1)
+                        .opacity(viewModel.undoStack.isEmpty ? 0.4 : 1.0)
                 }
                 .buttonStyle(.plain)
                 .disabled(viewModel.undoStack.isEmpty)

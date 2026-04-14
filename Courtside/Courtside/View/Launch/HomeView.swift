@@ -3,6 +3,7 @@ import SwiftData
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
 
     @Query(sort: \Team.name)
     private var myTeams: [Team]
@@ -64,7 +65,8 @@ struct HomeView: View {
                                     let won = game.myTeamScore > game.opponentScore
                                     Text("\(game.myTeamScore)-\(game.opponentScore)")
                                         .font(.headline)
-                                        .foregroundStyle(won ? .green : .red)
+                                        .monospacedDigit()
+                                        .foregroundStyle(won ? theme.winColor : theme.lossColor)
                                 }
                             }
                         }
