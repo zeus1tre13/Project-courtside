@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courtside — Data &amp; Cookie Policy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.7; color: #1d1d1f; background: #fff; padding: 2rem 1.25rem; max-width: 720px; margin: 0 auto; }
+        h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: 0.5rem; }
+        h3 { font-size: 1rem; margin-top: 1.25rem; margin-bottom: 0.4rem; }
+        p, li { font-size: 0.95rem; margin-bottom: 0.75rem; }
+        ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+        .date { color: #6e6e73; font-size: 0.9rem; margin-bottom: 2rem; }
+        a { color: #0066cc; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        th, td { border: 1px solid #d2d2d7; padding: 0.6rem 0.75rem; text-align: left; }
+        th { background: #f5f5f7; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<h1>Data &amp; Cookie Policy</h1>
+<p class="date">Effective Date: April 13, 2026</p>
+
+<p>This Data &amp; Cookie Policy explains what data technologies Courtside uses, how your data is stored, and how it moves between your devices and any external services.</p>
+
+<h2>1. Cookies and Tracking Technologies</h2>
+<p>Courtside is a native iOS application. It does not use cookies, web beacons, pixels, or any browser-based tracking technologies. The App does not contain any advertising SDKs, analytics frameworks, or third-party tracking libraries.</p>
+
+<h2>2. On-Device Data Storage</h2>
+<p>Courtside stores all user-created data (teams, rosters, games, statistics, lineups) locally on your device using Apple's SwiftData framework, which uses an encrypted SQLite database. This data never leaves your device unless you have iCloud sync enabled (see Section 4 below).</p>
+
+<h3>2.1 Types of Data Stored Locally</h3>
+<table>
+    <tr><th>Data Category</th><th>Examples</th><th>Purpose</th></tr>
+    <tr><td>Team Data</td><td>Team name, school name, team colors</td><td>Organize and identify teams</td></tr>
+    <tr><td>Roster Data</td><td>Player first/last name, jersey number, active status</td><td>Track player participation</td></tr>
+    <tr><td>Game Data</td><td>Date, opponent, period format, scores</td><td>Record game outcomes</td></tr>
+    <tr><td>Statistical Events</td><td>Stat type, period, timestamp, shot zone</td><td>Live stat tracking</td></tr>
+    <tr><td>Lineup Records</td><td>Player substitutions with period and time</td><td>Track playing time</td></tr>
+    <tr><td>App Preferences</td><td>Settings, API key (if provided)</td><td>Personalize experience</td></tr>
+</table>
+
+<h2>3. Camera and Photo Data</h2>
+<p>When you use the roster-scanning feature, the App accesses your camera or photo library to capture or select an image of a printed roster sheet. This image is:</p>
+<ul>
+    <li>Processed on-device using Apple's Vision framework to extract text.</li>
+    <li>If on-device recognition is insufficient, optionally sent to Google Gemini API for a single text-extraction request.</li>
+    <li>Not stored by the App after processing is complete.</li>
+    <li>Not used for any purpose other than extracting player names and jersey numbers.</li>
+</ul>
+
+<h2>4. iCloud Sync (CloudKit)</h2>
+<p>If iCloud is enabled on your device, Courtside data may automatically sync to your other Apple devices through Apple's CloudKit service. This means:</p>
+<ul>
+    <li>Your data is encrypted in transit and at rest by Apple.</li>
+    <li>Data is stored in your personal iCloud account, not on our servers.</li>
+    <li>We have no ability to access your iCloud-synced data.</li>
+    <li>You can disable this by turning off iCloud for Courtside in your device's Settings &gt; [Your Name] &gt; iCloud.</li>
+</ul>
+
+<h2>5. Third-Party Data Transfers</h2>
+<p>The only external data transfer Courtside performs is the optional Gemini API call described in Section 3. No data is sold, rented, or shared with advertisers, data brokers, or any other third parties. The following table summarizes all data flows:</p>
+<table>
+    <tr><th>Destination</th><th>Data Sent</th><th>When</th><th>Required?</th></tr>
+    <tr><td>Google Gemini API</td><td>Roster sheet image</td><td>Fallback roster scan only</td><td>No — only when on-device OCR fails</td></tr>
+    <tr><td>Apple iCloud (CloudKit)</td><td>All app data</td><td>Ongoing, if enabled</td><td>No — user-controlled via Settings</td></tr>
+</table>
+
+<h2>6. Data Export</h2>
+<p>Courtside allows you to export game statistics as CSV files. Exported files are generated on your device and shared using the iOS share sheet. We do not receive a copy of any exported data.</p>
+
+<h2>7. Data Deletion</h2>
+<p>You can delete your data at any time by:</p>
+<ul>
+    <li>Deleting individual games, teams, or rosters within the App.</li>
+    <li>Uninstalling the App, which removes all locally stored data.</li>
+    <li>Managing iCloud storage through your device Settings to remove synced data.</li>
+</ul>
+
+<h2>8. Changes to This Policy</h2>
+<p>We may update this Data &amp; Cookie Policy periodically. Changes will be posted with a revised effective date. Continued use of the App after changes constitutes acceptance.</p>
+
+<h2>9. Contact Us</h2>
+<p>Questions about this policy? Contact us at:<br>
+<a href="mailto:zack@xciv.ai">zack@xciv.ai</a></p>
+
+</body>
+</html>
