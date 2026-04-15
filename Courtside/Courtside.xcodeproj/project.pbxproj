@@ -721,8 +721,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P6YCWG5ZT2;
 				INFOPLIST_FILE = Courtside/Info.plist;
+				MARKETING_VERSION = 1.0;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Courtside accesses your photos to scan roster sheets";
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
@@ -732,7 +734,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xciv.courtside;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -758,8 +760,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P6YCWG5ZT2;
 				INFOPLIST_FILE = Courtside/Info.plist;
+				MARKETING_VERSION = 1.0;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Courtside accesses your photos to scan roster sheets";
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
@@ -769,7 +773,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xciv.courtside;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
