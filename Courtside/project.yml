@@ -6,6 +6,21 @@ options:
   xcodeVersion: "16.0"
   generateEmptyDirectories: true
 
+schemes:
+  Courtside:
+    build:
+      targets:
+        Courtside: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - CourtsideTests
+        - CourtsideUITests
+    archive:
+      config: Release
+
 settings:
   base:
     SWIFT_VERSION: "5.9"

@@ -4,7 +4,10 @@ import SwiftData
 struct TeamDetailView: View {
     @Bindable var team: Team
     @Environment(\.theme) private var theme
+    @Environment(\.dismiss) private var dismiss
     @State private var showingEditTeam = false
+
+    private let brandOrange = Color(hex: "#FF5E1A")
 
     @Query private var allGames: [Game]
 
@@ -54,6 +57,12 @@ struct TeamDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+
+                NavigationLink {
+                    TeamAnalyticsView(team: team)
+                } label: {
+                    Label("Analytics", systemImage: "chart.bar")
+                }
             }
 
             // Games
@@ -94,11 +103,23 @@ struct TeamDetailView: View {
         }
         .navigationTitle("Team")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .tint(brandOrange)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(brandOrange)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") {
                     showingEditTeam = true
                 }
+                .tint(brandOrange)
             }
         }
         .sheet(isPresented: $showingEditTeam) {

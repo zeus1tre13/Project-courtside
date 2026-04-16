@@ -3,6 +3,7 @@ import SwiftData
 
 struct GameSummaryView: View {
     let game: Game
+    @Environment(\.dismiss) private var dismiss
     @Query private var allTeams: [Team]
     @Query private var allPlayers: [Player]
     @Query private var allEvents: [StatEvent]
@@ -12,9 +13,25 @@ struct GameSummaryView: View {
     @State private var shareURL: URL?
     @State private var showingShare = false
 
+    private let brandOrange = Color(hex: "#FF5E1A")
+
     private var myTeamName: String {
         guard let teamID = game.myTeamID else { return "My Team" }
         return allTeams.first { $0.id == teamID }?.displayName ?? "My Team"
+    }
+
+    private var gameEvents: [StatEvent] {
+        allEvents.filter { $0.gameID == game.id }
+    }
+
+    private var myPlayers: [Player] {
+        guard let teamID = game.myTeamID else { return [] }
+        return allPlayers.filter { $0.teamID == teamID }
+    }
+
+    private var opponentPlayers: [Player] {
+        guard let teamID = game.opponentTeamID else { return [] }
+        return allPlayers.filter { $0.teamID == teamID }
     }
 
     private var myColor: Color { Color(hex: game.myTeamColorHex) }
@@ -76,16 +93,44 @@ struct GameSummaryView: View {
 
                     BoxScoreView(game: game)
                 }
+
+                // Shot chart
+                if game.trackShotZones {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Shot Chart")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        ShotChartSectionView(
+                            events: gameEvents,
+                            myPlayers: myPlayers,
+                            opponentPlayers: opponentPlayers
+                        )
+                        .padding(.horizontal)
+                    }
+                }
             }
         }
         .navigationTitle("Game Summary")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .tint(brandOrange)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(brandOrange)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     exportCSV()
                 } label: {
                     Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(brandOrange)
                 }
             }
         }
