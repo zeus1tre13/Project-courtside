@@ -28,7 +28,7 @@ settings:
     GENERATE_INFOPLIST_FILE: true
     INFOPLIST_KEY_UILaunchScreen_Generation: true
     INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
     INFOPLIST_KEY_CFBundleDisplayName: Courtside
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -45,10 +45,10 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.xciv.courtside
         MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: 2
+        CURRENT_PROJECT_VERSION: 3
         INFOPLIST_KEY_NSCameraUsageDescription: "Courtside uses your camera to scan roster sheets"
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Courtside accesses your photos to scan roster sheets"
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: P6YCWG5ZT2
         CODE_SIGN_ENTITLEMENTS: Courtside/Courtside.entitlements
 
   CourtsideTests:
