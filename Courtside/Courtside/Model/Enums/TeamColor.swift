@@ -33,6 +33,15 @@ enum TeamColor: String, CaseIterable, Identifiable {
     static func from(hex: String) -> TeamColor {
         allCases.first { $0.hex == hex } ?? .blue
     }
+
+    /// Derives a stable color from a UUID so teams without a stored color
+    /// still get a consistent accent. Replace with a real field when Team gains one.
+    static func derived(from id: UUID) -> TeamColor {
+        var hasher = Hasher()
+        hasher.combine(id)
+        let index = abs(hasher.finalize()) % allCases.count
+        return allCases[index]
+    }
 }
 
 // MARK: - Color hex extension

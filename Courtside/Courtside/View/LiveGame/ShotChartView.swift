@@ -127,7 +127,7 @@ private struct ZoneButton: View {
 
 // MARK: - Court Shape (lines only)
 
-private struct CourtShape: Shape {
+struct CourtShape: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let w = rect.width
@@ -222,7 +222,7 @@ private struct CourtShape: Shape {
 
 // MARK: - Court Fill
 
-private struct CourtFill: Shape {
+struct CourtFill: Shape {
     func path(in rect: CGRect) -> Path {
         Path(rect)
     }
