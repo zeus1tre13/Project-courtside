@@ -44,6 +44,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.xciv.courtside
+        MARKETING_VERSION: "1.1"
+        CURRENT_PROJECT_VERSION: 2
         INFOPLIST_KEY_NSCameraUsageDescription: "Courtside uses your camera to scan roster sheets"
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Courtside accesses your photos to scan roster sheets"
         DEVELOPMENT_TEAM: ""

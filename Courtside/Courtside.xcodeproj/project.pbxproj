@@ -766,6 +766,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Courtside/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
@@ -774,6 +775,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xciv.courtside;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -802,6 +804,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Courtside/Courtside.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Courtside/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Courtside uses your camera to scan roster sheets";
@@ -810,6 +813,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xciv.courtside;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
