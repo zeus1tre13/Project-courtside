@@ -55,9 +55,8 @@ enum BoxScoreCell: Equatable {
 
 // MARK: - Edit Sheet
 
-/// Sheet shown when a box score cell is tapped.
-/// Lists the StatEvents behind that number (delete via swipe)
-/// and offers an Add flow scoped to the cell category.
+/// Bottom sheet shown when a box-score cell is tapped — lists the events
+/// behind that number with delete affordances and an Add-event flow.
 struct BoxScoreEditSheet: View {
     let game: Game
     /// nil = totals row (team-level)
@@ -92,85 +91,152 @@ struct BoxScoreEditSheet: View {
 
     private var subjectLabel: String {
         if let player = player {
-            return "#\(player.jerseyNumber) \(player.shortName)"
+            return "#\(player.jerseyNumber) \(player.lastName.isEmpty ? player.fullName : player.lastName)"
         }
-        return isOpponent ? game.opponentName : "Team Total"
+        return isOpponent ? game.opponentName : "Team total"
     }
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
+        VStack(spacing: 0) {
+            Capsule().fill(CS.lineStrong)
+                .frame(width: 40, height: 4)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+
+            header
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("\(events.count) EVENT\(events.count == 1 ? "" : "S")")
+                        .font(.csUI(11, weight: .bold))
+                        .tracking(1.2)
+                        .foregroundStyle(CS.inkDim)
+                        .padding(.top, 10)
+
                     if events.isEmpty {
-                        Text("No events logged")
-                            .foregroundStyle(.secondary)
+                        Text("No events logged for this stat.")
+                            .font(.csUI(13))
+                            .foregroundStyle(CS.inkMute)
+                            .padding(.vertical, 16)
                     } else {
                         ForEach(events) { event in
                             eventRow(event)
                         }
-                        .onDelete(perform: deleteEvents)
                     }
-                } header: {
-                    Text("\(events.count) event\(events.count == 1 ? "" : "s")")
                 }
+                .padding(.horizontal, 14)
+                .padding(.bottom, 12)
+            }
+            .scrollIndicators(.hidden)
 
-                Section {
-                    Button {
-                        showAddForm = true
-                    } label: {
-                        Label("Add Event", systemImage: "plus.circle.fill")
-                    }
+            Button {
+                showAddForm = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .foregroundStyle(CS.brand)
+                    Text("Add an event")
                 }
+                .font(.csUI(14, weight: .bold))
+                .foregroundStyle(CS.ink)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(CS.bgSoft, in: RoundedRectangle(cornerRadius: 12))
             }
-            .navigationTitle("\(subjectLabel) · \(cell.title)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .sheet(isPresented: $showAddForm) {
-                AddStatEventForm(
-                    game: game,
-                    player: player,
-                    cell: cell,
-                    isOpponent: isOpponent
-                )
-                .presentationDetents([.medium, .large])
-            }
+            .padding(.horizontal, 14)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
         }
+        .background(CS.bgStage)
+        .sheet(isPresented: $showAddForm) {
+            AddStatEventForm(
+                game: game,
+                player: player,
+                cell: cell,
+                isOpponent: isOpponent
+            )
+            .presentationDetents([.medium, .large])
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            if let player {
+                Jersey(number: player.jerseyNumber,
+                       color: isOpponent ? CS.away : CS.home, size: 36)
+            }
+            VStack(alignment: .leading, spacing: 1) {
+                Text("EDITING")
+                    .font(.csUI(11, weight: .bold))
+                    .tracking(1.4)
+                    .foregroundStyle(CS.inkDim)
+                Text("\(subjectLabel) · \(cell.title)")
+                    .font(.csDisplay(19, weight: .bold))
+                    .foregroundStyle(CS.ink)
+            }
+            Spacer()
+            Button("Done") { dismiss() }
+                .font(.csUI(13, weight: .bold))
+                .foregroundStyle(CS.brand)
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 12)
+        .overlay(alignment: .bottom) { Rectangle().fill(CS.line).frame(height: 1) }
     }
 
     private func eventRow(_ event: StatEvent) -> some View {
-        HStack {
+        HStack(spacing: 12) {
             Text(game.format.periodLabel(for: event.period))
-                .font(.caption.bold())
-                .foregroundStyle(.secondary)
-                .frame(width: 40, alignment: .leading)
+                .font(.csMono(12, weight: .bold))
+                .foregroundStyle(CS.inkMute)
+                .frame(width: 38, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(event.statType.displayName)
-                    .font(.body)
+            VStack(alignment: .leading, spacing: 3) {
+                statBadge(event.statType)
                 if let zone = event.shotZone {
                     Text(zone.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.csUI(12))
+                        .foregroundStyle(CS.inkMute)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
-            Text(event.timestamp, format: .dateTime.hour().minute())
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            Button {
+                softDelete(event)
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 14))
+                    .foregroundStyle(CS.danger)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(CS.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(CS.line, lineWidth: 1))
+    }
+
+    @ViewBuilder
+    private func statBadge(_ stat: StatType) -> some View {
+        let points = stat.pointValue
+        if stat.isMake {
+            badge("MADE\(points > 0 ? " +\(points)" : "")", CS.made, CS.madeSoft)
+        } else if stat.isMiss {
+            badge("MISS", CS.inkMute, CS.bgSoft)
+        } else {
+            badge(stat.displayName.uppercased(), CS.ink, CS.bgSoft)
         }
     }
 
-    private func deleteEvents(at offsets: IndexSet) {
-        for idx in offsets {
-            let event = events[idx]
-            softDelete(event)
-        }
+    private func badge(_ text: String, _ fg: Color, _ bg: Color) -> some View {
+        Text(text)
+            .font(.csUI(11, weight: .heavy))
+            .tracking(0.6)
+            .foregroundStyle(fg)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(bg, in: Capsule())
     }
 
     private func softDelete(_ event: StatEvent) {

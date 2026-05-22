@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 
+/// Post-game container — a shared score header and sub-nav over the three
+/// connected views: Recap, Box score, and Shot chart (plus a Play-by-play
+/// stub). Replaces the old single-scroll game summary.
 struct GameSummaryView: View {
     let game: Game
     @Environment(\.dismiss) private var dismiss
@@ -8,25 +11,33 @@ struct GameSummaryView: View {
     @Query private var allPlayers: [Player]
     @Query private var allEvents: [StatEvent]
 
-    @ScaledMetric(relativeTo: .largeTitle) private var scoreSize: CGFloat = 48
-
+    @State private var tab: PostGameTab = .recap
     @State private var shareURL: URL?
     @State private var showingShare = false
 
-    private let brandOrange = Color(hex: "#FF5E1A")
-
-    private var myTeamName: String {
-        guard let teamID = game.myTeamID else { return "My Team" }
-        return allTeams.first { $0.id == teamID }?.displayName ?? "My Team"
+    enum PostGameTab: String, CaseIterable {
+        case recap, box, shots, plays
+        var label: String {
+            switch self {
+            case .recap: return "Recap"
+            case .box:   return "Box score"
+            case .shots: return "Shot chart"
+            case .plays: return "Play-by-play"
+            }
+        }
     }
 
+    // MARK: - Data
+
     private var gameEvents: [StatEvent] {
-        allEvents.filter { $0.gameID == game.id }
+        allEvents.filter { $0.gameID == game.id && !$0.isDeleted }
     }
 
     private var myPlayers: [Player] {
         guard let teamID = game.myTeamID else { return [] }
-        return allPlayers.filter { $0.teamID == teamID }
+        return allPlayers
+            .filter { $0.teamID == teamID }
+            .sorted { (Int($0.jerseyNumber) ?? 999) < (Int($1.jerseyNumber) ?? 999) }
     }
 
     private var opponentPlayers: [Player] {
@@ -34,106 +45,29 @@ struct GameSummaryView: View {
         return allPlayers.filter { $0.teamID == teamID }
     }
 
-    private var myColor: Color { Color(hex: game.myTeamColorHex) }
-    private var oppColor: Color { Color(hex: game.opponentColorHex) }
+    private var myTeamName: String {
+        guard let teamID = game.myTeamID else { return "My Team" }
+        return allTeams.first { $0.id == teamID }?.displayName ?? "My Team"
+    }
+
+    private var myScore: Int {
+        StatCalculator.teamBoxScoreLine(from: gameEvents, isOpponent: false).points
+    }
+    private var oppScore: Int {
+        StatCalculator.teamBoxScoreLine(from: gameEvents, isOpponent: true).points
+    }
+
+    // MARK: - Body
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Score header
-                HStack {
-                    VStack {
-                        Text(myTeamName)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                        Text("\(game.myTeamScore)")
-                            .font(.system(size: scoreSize, weight: .bold))
-                            .monospacedDigit()
-                            .foregroundStyle(myColor)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    VStack {
-                        Text("vs")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(game.date, style: .date)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    VStack {
-                        Text(game.opponentName)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                        Text("\(game.opponentScore)")
-                            .font(.system(size: scoreSize, weight: .bold))
-                            .monospacedDigit()
-                            .foregroundStyle(oppColor)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding()
-
-                // Period scores
-                if game.isComplete {
-                    PeriodScoresView(game: game, myTeamName: myTeamName, myColor: myColor, oppColor: oppColor)
-                        .padding(.horizontal)
-                }
-
-                // Box score
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Box Score")
-                        .font(.headline)
-                        .padding(.horizontal)
-
-                    BoxScoreView(game: game)
-                }
-
-                // Shot chart
-                if game.trackShotZones {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Shot Chart")
-                            .font(.headline)
-                            .padding(.horizontal)
-
-                        ShotChartSectionView(
-                            events: gameEvents,
-                            myPlayers: myPlayers,
-                            opponentPlayers: opponentPlayers
-                        )
-                        .padding(.horizontal)
-                    }
-                }
-            }
+        VStack(spacing: 0) {
+            chrome
+            scoreHeader
+            subNav
+            tabContent
         }
-        .navigationTitle("Game Summary")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .tint(brandOrange)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(brandOrange)
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    exportCSV()
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .foregroundStyle(brandOrange)
-                }
-            }
-        }
+        .background(CS.bgStage)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingShare) {
             if let shareURL {
                 ShareSheet(items: [shareURL])
@@ -142,17 +76,172 @@ struct GameSummaryView: View {
         }
     }
 
+    // MARK: - Chrome
+
+    private var chrome: some View {
+        HStack {
+            Button { dismiss() } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text("Games")
+                }
+                .font(.csUI(15, weight: .semibold))
+                .foregroundStyle(CS.brand)
+            }
+            Spacer()
+            HStack(spacing: 6) {
+                Image(systemName: "basketball.fill")
+                    .font(.system(size: 14))
+                Text("COURTSIDE")
+                    .font(.csDisplay(15, weight: .heavy))
+                    .tracking(1)
+            }
+            .foregroundStyle(CS.brand)
+            Spacer()
+            Button { exportCSV() } label: {
+                Text("Export")
+                    .font(.csUI(14, weight: .semibold))
+                    .foregroundStyle(CS.brand)
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 48)
+    }
+
+    // MARK: - Score header
+
+    private var margin: Int { abs(myScore - oppScore) }
+
+    private var resultPill: (text: String, color: Color) {
+        if myScore > oppScore { return ("W +\(margin)", CS.made) }
+        if myScore < oppScore { return ("L \(margin)", CS.danger) }
+        return ("TIE", CS.inkMute)
+    }
+
+    private var scoreHeader: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Text("FINAL · \(game.date.formatted(.dateTime.month(.abbreviated).day().year()))")
+                    .font(.csUI(10, weight: .bold))
+                    .tracking(1.2)
+                    .foregroundStyle(CS.inkDim)
+                Spacer()
+                Text(resultPill.text)
+                    .font(.csUI(10, weight: .heavy))
+                    .tracking(1)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 3)
+                    .background(resultPill.color, in: Capsule())
+            }
+
+            HStack(spacing: 10) {
+                teamScore(name: myTeamName, score: myScore, color: CS.home,
+                          winner: myScore >= oppScore, reversed: false)
+                Text("·")
+                    .font(.csDisplay(22, weight: .bold))
+                    .foregroundStyle(CS.inkDim)
+                teamScore(name: game.opponentName, score: oppScore, color: CS.away,
+                          winner: oppScore > myScore, reversed: true)
+            }
+        }
+        .padding(16)
+        .background(CS.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(CS.line, lineWidth: 1))
+        .padding(.horizontal, 14)
+        .padding(.top, 4)
+        .padding(.bottom, 12)
+    }
+
+    private func teamScore(name: String, score: Int, color: Color,
+                           winner: Bool, reversed: Bool) -> some View {
+        let label = VStack(alignment: reversed ? .trailing : .leading, spacing: 0) {
+            Text((name.isEmpty ? (reversed ? "Opponent" : "Team") : name).uppercased())
+                .font(.csUI(11, weight: .semibold))
+                .tracking(0.5)
+                .foregroundStyle(CS.inkMute)
+                .lineLimit(1)
+            Text("\(score)")
+                .font(.csDisplay(52, weight: .heavy))
+                .foregroundStyle(winner ? CS.ink : CS.inkMute)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+        }
+        let jersey = Jersey(number: String(name.prefix(1)).uppercased(),
+                            color: color, size: 36)
+        return HStack(spacing: 10) {
+            if reversed { label; jersey } else { jersey; label }
+        }
+        .frame(maxWidth: .infinity, alignment: reversed ? .trailing : .leading)
+    }
+
+    // MARK: - Sub-nav
+
+    private var subNav: some View {
+        HStack(spacing: 4) {
+            ForEach(PostGameTab.allCases, id: \.self) { item in
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) { tab = item }
+                } label: {
+                    Text(item.label)
+                        .font(.csUI(13, weight: .bold))
+                        .foregroundStyle(tab == item ? CS.ink : CS.inkMute)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(tab == item ? CS.brand : .clear)
+                                .frame(height: 2)
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(CS.line).frame(height: 1)
+        }
+    }
+
+    // MARK: - Tab content
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch tab {
+        case .recap:
+            ScrollView {
+                PostGameRecapView(
+                    game: game,
+                    events: gameEvents,
+                    myPlayers: myPlayers,
+                    myTeamName: myTeamName,
+                    onOpenShotChart: { withAnimation { tab = .shots } }
+                )
+            }
+            .scrollIndicators(.hidden)
+        case .box:
+            BoxScoreView(game: game)
+        case .shots:
+            ShotHeatMapView(events: gameEvents, myPlayers: myPlayers)
+        case .plays:
+            PlayByPlayView(
+                game: game,
+                events: gameEvents,
+                players: myPlayers + opponentPlayers,
+                myTeamName: myTeamName
+            )
+        }
+    }
+
+    // MARK: - Export
+
     private func exportCSV() {
-        let gameEvents = allEvents.filter { $0.gameID == game.id }
-        let myPlayers: [Player] = {
-            guard let teamID = game.myTeamID else { return [] }
-            return allPlayers.filter { $0.teamID == teamID }
-        }()
         let oppPlayers: [Player] = {
             guard let teamID = game.opponentTeamID else { return [] }
             return allPlayers.filter { $0.teamID == teamID }
         }()
-
         let csv = CSVExporter.exportBoxScore(
             game: game,
             myTeamName: myTeamName,
@@ -160,7 +249,6 @@ struct GameSummaryView: View {
             opponentPlayers: oppPlayers,
             events: gameEvents
         )
-
         if let url = CSVExporter.writeToFile(
             csv: csv,
             myTeamName: myTeamName,
@@ -170,83 +258,5 @@ struct GameSummaryView: View {
             shareURL = url
             showingShare = true
         }
-    }
-}
-
-struct PeriodScoresView: View {
-    let game: Game
-    var myTeamName: String = "My Team"
-    var myColor: Color = .blue
-    var oppColor: Color = .red
-
-    var body: some View {
-        let periods = 1...game.currentPeriod
-
-        VStack(spacing: 0) {
-            // Header row
-            HStack {
-                Text("Team")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(Array(periods), id: \.self) { period in
-                    Text(game.format.periodLabel(for: period))
-                        .frame(width: 40)
-                }
-                Text("T")
-                    .fontWeight(.bold)
-                    .frame(width: 40)
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(.vertical, 8)
-
-            Divider()
-
-            // My team row
-            HStack {
-                Text(myTeamName)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .foregroundStyle(myColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(Array(periods), id: \.self) { period in
-                    Text("\(game.scoreForPeriod(period, isOpponent: false))")
-                        .monospacedDigit()
-                        .frame(width: 40)
-                }
-                Text("\(game.myTeamScore)")
-                    .fontWeight(.bold)
-                    .monospacedDigit()
-                    .foregroundStyle(myColor)
-                    .frame(width: 40)
-            }
-            .font(.subheadline)
-            .padding(.vertical, 6)
-
-            Divider()
-
-            // Opponent row
-            HStack {
-                Text(game.opponentName)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .foregroundStyle(oppColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(Array(periods), id: \.self) { period in
-                    Text("\(game.scoreForPeriod(period, isOpponent: true))")
-                        .monospacedDigit()
-                        .frame(width: 40)
-                }
-                Text("\(game.opponentScore)")
-                    .fontWeight(.bold)
-                    .monospacedDigit()
-                    .foregroundStyle(oppColor)
-                    .frame(width: 40)
-            }
-            .font(.subheadline)
-            .padding(.vertical, 6)
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

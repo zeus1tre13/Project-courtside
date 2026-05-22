@@ -2,10 +2,28 @@ import Foundation
 import Vision
 import UIKit
 
+enum ScanConfidence {
+    case high, low
+}
+
 struct ScannedPlayer {
     let jerseyNumber: String
     let firstName: String
     let lastName: String
+    var confidence: ScanConfidence = .high
+
+    /// Heuristic confidence from the parsed fields alone — a row looks shaky
+    /// when the name is incomplete, very short, or carries stray digits.
+    static func heuristicConfidence(
+        jersey: String, first: String, last: String
+    ) -> ScanConfidence {
+        let hasDigitsInName = (first + last).contains { $0.isNumber }
+        let jerseyOK = Int(jersey).map { $0 >= 0 && $0 <= 99 } ?? false
+        if first.isEmpty || last.count < 2 || hasDigitsInName || !jerseyOK {
+            return .low
+        }
+        return .high
+    }
 }
 
 enum ScanResult {
@@ -39,9 +57,10 @@ actor RosterScanner {
             return .needsFallback(image)
         }
 
-        // Collect all recognized text lines
-        let lines = observations.compactMap { observation -> String? in
-            observation.topCandidates(1).first?.string
+        // Collect recognized text lines with their OCR confidence
+        let lines = observations.compactMap { observation -> (String, Float)? in
+            guard let candidate = observation.topCandidates(1).first else { return nil }
+            return (candidate.string, candidate.confidence)
         }
 
         // Try to parse roster entries
@@ -62,11 +81,11 @@ actor RosterScanner {
     ///   "#23 Tatum Odell"
     ///   "23 - Odell, Tatum"
     ///   "Odell, Tatum  23"
-    private func parseRosterLines(_ lines: [String]) -> [ScannedPlayer] {
+    private func parseRosterLines(_ lines: [(String, Float)]) -> [ScannedPlayer] {
         var players: [ScannedPlayer] = []
 
-        for line in lines {
-            if let player = parseRosterLine(line) {
+        for (line, ocrConfidence) in lines {
+            if let player = parseRosterLine(line, ocrConfidence: ocrConfidence) {
                 players.append(player)
             }
         }
@@ -74,9 +93,22 @@ actor RosterScanner {
         return players
     }
 
-    private func parseRosterLine(_ line: String) -> ScannedPlayer? {
+    private func parseRosterLine(_ line: String, ocrConfidence: Float) -> ScannedPlayer? {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return nil }
+
+        func build(_ number: String, _ first: String, _ last: String) -> ScannedPlayer {
+            // Low confidence if Vision was unsure OR the parsed fields look off.
+            let heuristic = ScannedPlayer.heuristicConfidence(
+                jersey: number, first: first, last: last
+            )
+            let confidence: ScanConfidence =
+                (ocrConfidence < 0.45 || heuristic == .low) ? .low : .high
+            return ScannedPlayer(
+                jerseyNumber: number, firstName: first, lastName: last,
+                confidence: confidence
+            )
+        }
 
         // Pattern 1: #NUMBER NAME or NUMBER NAME (number first)
         // e.g., "#23 Tatum Odell", "23 Tatum Odell", "23 - Tatum Odell"
@@ -85,7 +117,7 @@ actor RosterScanner {
             let number = String(match.1)
             let namePart = String(match.2).trimmingCharacters(in: .whitespaces)
             if let (first, last) = parseName(namePart) {
-                return ScannedPlayer(jerseyNumber: number, firstName: first, lastName: last)
+                return build(number, first, last)
             }
         }
 
@@ -96,7 +128,7 @@ actor RosterScanner {
             let namePart = String(match.1).trimmingCharacters(in: .whitespaces)
             let number = String(match.2)
             if let (first, last) = parseName(namePart) {
-                return ScannedPlayer(jerseyNumber: number, firstName: first, lastName: last)
+                return build(number, first, last)
             }
         }
 
@@ -228,7 +260,14 @@ actor RosterScanner {
             guard let number = dict["number"],
                   let lastName = dict["lastName"] else { return nil }
             let firstName = dict["firstName"] ?? ""
-            return ScannedPlayer(jerseyNumber: number, firstName: firstName, lastName: lastName)
+            return ScannedPlayer(
+                jerseyNumber: number,
+                firstName: firstName,
+                lastName: lastName,
+                confidence: ScannedPlayer.heuristicConfidence(
+                    jersey: number, first: firstName, last: lastName
+                )
+            )
         }
     }
 }

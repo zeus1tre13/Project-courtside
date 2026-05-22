@@ -109,13 +109,33 @@ struct CourtsideApp: App {
 
 private struct SplashView: View {
     var body: some View {
-        GeometryReader { geo in
-            Image("CourtsideSplash")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: geo.size.width, height: geo.size.height)
-                .clipped()
-                .ignoresSafeArea()
+        ZStack {
+            CS.bgApp.ignoresSafeArea()
+
+            VStack {
+                Text("BASKETBALL · SCORED RIGHT")
+                    .font(.csDisplay(11, weight: .heavy))
+                    .tracking(4)
+                    .foregroundStyle(CS.brand)
+                    .padding(.top, 72)
+                Spacer()
+            }
+
+            VStack(spacing: 6) {
+                Image(systemName: "basketball")
+                    .font(.system(size: 88, weight: .light))
+                    .foregroundStyle(CS.brand)
+                Text("COURTSIDE")
+                    .font(.csDisplay(56, weight: .black))
+                    .tracking(2)
+                    .foregroundStyle(CS.ink)
+                Text("94 FEET · EVERY INCH, COVERED")
+                    .font(.csDisplay(12, weight: .bold))
+                    .tracking(3)
+                    .foregroundStyle(CS.inkMute)
+                    .padding(.top, 2)
+            }
+            .offset(y: -12)
         }
     }
 }

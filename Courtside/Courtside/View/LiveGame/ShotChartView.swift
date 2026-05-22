@@ -1,131 +1,108 @@
 import SwiftUI
 
+/// Live-game shot-zone picker — the 12-chip half-court. The same 12 zones
+/// appear for 2PT and 3PT; only zones valid for the shot type are tappable.
+/// "Skip" commits the shot without a zone, for fast play.
 struct ShotChartView: View {
     let validZones: [ShotZone]
+    var playerLabel: String = ""
     let onZoneSelected: (ShotZone) -> Void
     let onCancel: () -> Void
 
-    @State private var highlightedZone: ShotZone?
+    @State private var selected: ShotZone?
 
-    private var headerText: String {
-        if validZones.first?.isThreePointZone == true {
-            return "Where was the 3?"
-        } else {
-            return "Where was the shot?"
-        }
+    private var isThree: Bool {
+        validZones.first?.isThreePointZone == true
     }
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text(headerText)
-                    .font(.headline)
-                Spacer()
-                Button("Cancel") { onCancel() }
-                    .font(.subheadline)
+        VStack(spacing: 10) {
+            header
+
+            HalfCourtChart(paintFill: CS.amber.opacity(0.08)) { zone in
+                zoneChip(zone)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 12)
 
-            GeometryReader { geo in
-                let width = geo.size.width
-                let height = width * 0.85
+            Text("Same 12 zones for 2PT & 3PT · FT commits without a zone")
+                .font(.csUI(10))
+                .foregroundStyle(CS.inkDim)
+        }
+        .padding(.vertical, 14)
+        .background(CS.bgStage)
+    }
 
-                ZStack {
-                    // Court floor
-                    CourtFill()
-                        .fill(Color(.systemGray6))
-                        .frame(width: width, height: height)
+    private var header: some View {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(isThree ? "3PT" : "2PT")\(playerLabel.isEmpty ? "" : " · \(playerLabel)")")
+                    .font(.csUI(10, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(CS.home)
+                Text(isThree ? "Where was the 3?" : "Where was the shot?")
+                    .font(.csDisplay(20, weight: .bold))
+                    .foregroundStyle(CS.ink)
+            }
+            Spacer()
+            Button { onCancel() } label: {
+                Text("SKIP")
+                    .font(.csUI(11, weight: .heavy))
+                    .tracking(0.6)
+                    .foregroundStyle(CS.inkMute)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(CS.bgSoft, in: Capsule())
+            }
+        }
+        .padding(.horizontal, 16)
+    }
 
-                    // Court lines
-                    CourtShape()
-                        .stroke(Color.primary.opacity(0.3), lineWidth: 1.5)
-                        .frame(width: width, height: height)
-
-                    // Tappable zones — only valid ones are active
-                    ForEach(ShotZone.allCases, id: \.self) { zone in
-                        let isValid = validZones.contains(zone)
-                        let rect = zone.hitArea
-                        let zoneRect = CGRect(
-                            x: rect.origin.x * width,
-                            y: rect.origin.y * height,
-                            width: rect.width * width,
-                            height: rect.height * height
-                        )
-
-                        if isValid {
-                            ZoneButton(
-                                zone: zone,
-                                rect: zoneRect,
-                                isHighlighted: highlightedZone == zone
-                            ) {
-                                highlightedZone = zone
-                                HapticManager.selectionChanged()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                    onZoneSelected(zone)
-                                }
-                            }
-                        } else {
-                            // Dimmed, non-tappable zone
-                            Text(zone.shortLabel)
-                                .font(.system(size: 12, weight: .medium))
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.tertiary)
-                                .frame(width: zoneRect.width, height: zoneRect.height)
-                                .position(x: zoneRect.midX, y: zoneRect.midY)
-                        }
-                    }
+    @ViewBuilder
+    private func zoneChip(_ zone: ShotZone) -> some View {
+        let valid = validZones.contains(zone)
+        let isSelected = selected == zone
+        let tint = zone.isThreePointZone ? CS.away : CS.amber
+        Button {
+            guard valid else { return }
+            selected = zone
+            HapticManager.selectionChanged()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                onZoneSelected(zone)
+            }
+        } label: {
+            HStack(spacing: 3) {
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 9, weight: .bold))
                 }
-                .frame(width: width, height: height)
+                Text(zone.shortLabel)
             }
-            .aspectRatio(1 / 0.85, contentMode: .fit)
-            .padding(.horizontal)
-        }
-    }
-}
-
-// MARK: - Zone Button
-
-private struct ZoneButton: View {
-    let zone: ShotZone
-    let rect: CGRect
-    let isHighlighted: Bool
-    let action: () -> Void
-
-    private var fillColor: Color {
-        if isHighlighted { return .orange }
-        return zone.isThreePointZone ? Color.blue.opacity(0.12) : Color.orange.opacity(0.12)
-    }
-
-    private var borderColor: Color {
-        zone.isThreePointZone ? Color.blue.opacity(0.3) : Color.orange.opacity(0.3)
-    }
-
-    var body: some View {
-        Button(action: action) {
-            Text(zone.shortLabel)
-                .font(.system(size: 13, weight: .semibold))
-                .minimumScaleFactor(0.8)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(isHighlighted ? .white : .primary)
-                .frame(width: rect.width, height: rect.height)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(fillColor)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .strokeBorder(borderColor, lineWidth: 1)
-                )
+            .font(.csUI(11, weight: .bold))
+            .foregroundStyle(isSelected ? .white : CS.ink)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background {
+                Color.white
+                (isSelected ? CS.made : tint.opacity(0.13))
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(isSelected ? CS.made : tint.opacity(0.5), lineWidth: 1.4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(CS.made.opacity(isSelected ? 0.25 : 0), lineWidth: 4)
+            )
         }
         .buttonStyle(.plain)
-        .position(
-            x: rect.midX,
-            y: rect.midY
-        )
+        .opacity(valid ? 1 : 0.32)
+        .disabled(!valid)
     }
 }
 
 // MARK: - Court Shape (lines only)
+// Retained for ShotCourtDisplayView (season analytics court).
 
 struct CourtShape: Shape {
     func path(in rect: CGRect) -> Path {

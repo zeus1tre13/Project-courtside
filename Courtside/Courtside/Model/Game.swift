@@ -12,6 +12,8 @@ final class Game {
     var isComplete: Bool = false
     var entryModeRaw: String = StatEntryMode.statFirst.rawValue
     var trackShotZones: Bool = true
+    /// After a made 2PT/3PT, prompt for who assisted. Default on.
+    var promptForAssists: Bool = true
     var myTeamColorHex: String = TeamColor.blue.hex
     var opponentColorHex: String = TeamColor.red.hex
     var createdAt: Date = Date()

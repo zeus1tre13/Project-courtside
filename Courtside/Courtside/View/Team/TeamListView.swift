@@ -1,161 +1,215 @@
 import SwiftUI
 import SwiftData
 
+/// Teams list — one card per team with color, monogram, record. Empty state
+/// for first run.
 struct TeamListView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \Team.name)
-    private var teams: [Team]
+    @Query(sort: \Team.name) private var teams: [Team]
+    @Query(filter: #Predicate<Game> { $0.isComplete }) private var completedGames: [Game]
 
     @State private var showingAddTeam = false
 
-    private let brandOrange = Color(hex: "#FF5E1A")
+    private var overall: (w: Int, l: Int) {
+        teams.reduce(into: (0, 0)) { acc, team in
+            let r = record(for: team)
+            acc.0 += r.w
+            acc.1 += r.l
+        }
+    }
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
-
-            GeometryReader { proxy in
-                Image("courtside-watermark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 280)
-                    .opacity(0.08)
-                    .position(x: proxy.size.width / 2, y: proxy.size.height * 0.75)
-                    .allowsHitTesting(false)
-            }
-
+            CS.bgStage.ignoresSafeArea()
             VStack(spacing: 0) {
-                header
-
-                List {
-                    ForEach(teams) { team in
-                        NavigationLink {
-                            TeamDetailView(team: team)
-                        } label: {
-                            teamRow(team: team)
-                        }
-                        .listRowInsets(EdgeInsets())
-                    }
-                    .onDelete(perform: deleteTeams)
+                chrome
+                if teams.isEmpty {
+                    emptyState
+                } else {
+                    list
                 }
-                .scrollContentBackground(.hidden)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingAddTeam) {
-            NavigationStack {
-                TeamFormView()
-            }
-        }
-        .overlay {
-            if teams.isEmpty {
-                ContentUnavailableView {
-                    Label("No Teams", systemImage: "person.3")
-                } description: {
-                    Text("Add your first team to get started.")
-                } actions: {
-                    Button("Add Team") {
-                        showingAddTeam = true
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-            }
+            TeamFormView()
         }
     }
 
-    // MARK: - Header
+    // MARK: - Chrome
 
-    private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Button {
-                dismiss()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color(.systemBackground))
-                        .frame(width: 40, height: 40)
-                        .shadow(color: .black.opacity(0.06), radius: 4, y: 1)
+    private var chrome: some View {
+        HStack {
+            Button { dismiss() } label: {
+                HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.primary)
+                    Text("Home")
                 }
+                .font(.csUI(15, weight: .semibold))
+                .foregroundStyle(CS.brand)
             }
-
+            Spacer()
             Text("Teams")
-                .font(.system(size: 34, weight: .heavy))
-                .foregroundStyle(brandOrange)
+                .font(.csDisplay(17, weight: .heavy))
+                .foregroundStyle(CS.ink)
+            Spacer()
+            Button { showingAddTeam = true } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "plus")
+                    Text("Add")
+                }
+                .font(.csUI(13, weight: .bold))
+                .foregroundStyle(CS.brand)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(CS.brandSoft, in: Capsule())
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 48)
+    }
+
+    // MARK: - List
+
+    private var list: some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                HStack {
+                    ShellSectionLabel(text: "\(teams.count) team\(teams.count == 1 ? "" : "s") · this season")
+                    Spacer()
+                    Text("\(overall.w)-\(overall.l) overall")
+                        .font(.csMono(11))
+                        .foregroundStyle(CS.inkMute)
+                }
+                .padding(.bottom, 2)
+
+                ForEach(teams) { team in
+                    NavigationLink { TeamDetailView(team: team) } label: {
+                        teamRow(team)
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                }
+
+                Button { showingAddTeam = true } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "plus")
+                        Text("Add another team")
+                    }
+                    .font(.csUI(13, weight: .bold))
+                    .foregroundStyle(CS.inkMute)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(CS.lineStrong,
+                                          style: StrokeStyle(lineWidth: 1.4, dash: [5, 4]))
+                    )
+                }
+                .padding(.top, 4)
+            }
+            .padding(14)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private func teamRow(_ team: Team) -> some View {
+        let rec = record(for: team)
+        return HStack(spacing: 12) {
+            TeamDisc(initials: team.monogram, color: team.accentColor, size: 42)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(team.schoolName?.isEmpty == false ? team.schoolName! : team.name)
+                    .font(.csDisplay(18, weight: .bold))
+                    .foregroundStyle(CS.ink)
+                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(team.name)
+                    Circle().fill(CS.inkDim).frame(width: 3, height: 3)
+                    Text("\(team.activePlayers.count) players").font(.csMono(11))
+                }
+                .font(.csUI(12))
+                .foregroundStyle(CS.inkMute)
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("\(rec.w)-\(rec.l)")
+                    .font(.csDisplay(18, weight: .heavy))
+                    .foregroundStyle(CS.ink)
+                Text("RECORD")
+                    .font(.csUI(9, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(CS.inkDim)
+            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(CS.inkDim)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(CS.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(CS.line, lineWidth: 1))
+        .overlay(alignment: .leading) {
+            Rectangle().fill(team.accentColor).frame(width: 4)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - Empty
+
+    private var emptyState: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                Circle()
+                    .strokeBorder(CS.lineStrong, style: StrokeStyle(lineWidth: 1.4, dash: [5, 4]))
+                    .frame(width: 106, height: 106)
+                Image(systemName: "person.3")
+                    .font(.system(size: 38))
+                    .foregroundStyle(CS.inkDim)
+                    .frame(width: 90, height: 90)
+                    .background(CS.bgSoft, in: Circle())
+            }
+            .padding(.top, 60)
+
+            Text("No teams yet.")
+                .font(.csDisplay(28, weight: .heavy))
+                .foregroundStyle(CS.ink)
+                .padding(.top, 22)
+
+            Text("Add your first team — school name, jersey color, and roster — to start tracking games.")
+                .font(.csUI(14))
+                .foregroundStyle(CS.inkMute)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+                .padding(.horizontal, 36)
+
+            Button { showingAddTeam = true } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                    Text("ADD YOUR FIRST TEAM")
+                        .font(.csDisplay(16, weight: .heavy))
+                        .tracking(0.8)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 24)
+                .frame(height: 52)
+                .background(CS.brand)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .buttonStyle(PressableButtonStyle())
+            .padding(.top, 22)
 
             Spacer()
-
-            Button {
-                showingAddTeam = true
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(brandOrange)
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.white)
-                }
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
-    }
-
-    // MARK: - Team Row
-
-    private func teamRow(team: Team) -> some View {
-        let accent: Color = {
-            if let hex = team.colorHex {
-                return TeamColor.from(hex: hex).color
-            }
-            return TeamColor.derived(from: team.id).color
-        }()
-        return HStack(spacing: 0) {
-            Rectangle()
-                .fill(accent)
-                .frame(width: 4)
-
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(accent.opacity(0.18))
-                        .frame(width: 40, height: 40)
-                    Text(initials(for: team.displayName))
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(accent)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(team.displayName)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.primary)
-                    Text("\(team.activePlayers.count) players")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
         }
     }
 
-    private func initials(for name: String) -> String {
-        let words = name.split(separator: " ").prefix(2)
-        let letters = words.compactMap { $0.first }.map(String.init)
-        return letters.joined().uppercased()
-    }
+    // MARK: - Helpers
 
-    private func deleteTeams(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(teams[index])
+    private func record(for team: Team) -> (w: Int, l: Int) {
+        var w = 0, l = 0
+        for game in completedGames where game.myTeamID == team.id {
+            if game.myTeamScore > game.opponentScore { w += 1 }
+            else if game.opponentScore > game.myTeamScore { l += 1 }
         }
+        return (w, l)
     }
 }

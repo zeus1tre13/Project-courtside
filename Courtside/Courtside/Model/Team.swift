@@ -30,9 +30,10 @@ final class Team {
     }
 
     var displayName: String {
-        if let schoolName, !schoolName.isEmpty {
-            return "\(schoolName) \(name)"
-        }
-        return name
+        let school = schoolName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let teamName = name.trimmingCharacters(in: .whitespaces)
+        if school.isEmpty { return teamName }
+        if teamName.isEmpty || teamName == school { return school }
+        return "\(school) \(teamName)"
     }
 }
