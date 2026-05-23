@@ -227,3 +227,82 @@ struct ShellSectionLabel: View {
             .foregroundStyle(CS.inkDim)
     }
 }
+
+/// Wraps a row with iOS-style swipe-to-delete. We can't use SwiftUI's built-in
+/// `.swipeActions` here because that modifier only works inside `List`, and the
+/// home screen renders recent games as styled cards inside a `VStack`.
+///
+/// Drag from right to left to reveal a trailing Delete button. The button
+/// invokes `onDelete`, which is expected to present its own confirmation.
+struct SwipeToDeleteRow<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+    var onDelete: () -> Void
+
+    @State private var offset: CGFloat = 0
+    @GestureState private var dragOffset: CGFloat = 0
+
+    private let actionWidth: CGFloat = 84
+    private let cornerRadius: CGFloat = 12
+
+    var body: some View {
+        let totalOffset = max(-actionWidth * 1.4, min(0, offset + dragOffset))
+        let revealed = -totalOffset
+
+        ZStack(alignment: .trailing) {
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                Button {
+                    withAnimation(.easeOut(duration: 0.18)) { offset = 0 }
+                    onDelete()
+                } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Delete")
+                            .font(.csUI(11, weight: .bold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(width: actionWidth)
+                    .frame(maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .opacity(revealed > 4 ? 1 : 0)
+                .allowsHitTesting(revealed > 36)
+            }
+            .background(CS.danger)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+
+            content()
+                .background(CS.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .offset(x: totalOffset)
+                .gesture(
+                    DragGesture(minimumDistance: 12, coordinateSpace: .local)
+                        .updating($dragOffset) { value, state, _ in
+                            if abs(value.translation.width) > abs(value.translation.height) {
+                                state = value.translation.width
+                            }
+                        }
+                        .onEnded { value in
+                            let predicted = value.predictedEndTranslation.width + offset
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                                if predicted < -actionWidth / 2 {
+                                    offset = -actionWidth
+                                } else {
+                                    offset = 0
+                                }
+                            }
+                        }
+                )
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        if offset != 0 {
+                            withAnimation(.easeOut(duration: 0.18)) { offset = 0 }
+                        }
+                    },
+                    including: offset != 0 ? .all : .subviews
+                )
+        }
+    }
+}

@@ -7,13 +7,13 @@ import SwiftData
 struct GameSummaryView: View {
     let game: Game
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Query private var allTeams: [Team]
     @Query private var allPlayers: [Player]
     @Query private var allEvents: [StatEvent]
 
     @State private var tab: PostGameTab = .recap
-    @State private var shareURL: URL?
-    @State private var showingShare = false
+    @State private var showingDeleteConfirm = false
 
     enum PostGameTab: String, CaseIterable {
         case recap, box, shots, plays
@@ -68,11 +68,11 @@ struct GameSummaryView: View {
         }
         .background(CS.bgStage)
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showingShare) {
-            if let shareURL {
-                ShareSheet(items: [shareURL])
-                    .presentationDetents([.medium])
-            }
+        .alert("Delete game?", isPresented: $showingDeleteConfirm) {
+            Button("Delete", role: .destructive) { deleteGame() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently removes the game and all of its stats. This cannot be undone.")
         }
     }
 
@@ -98,10 +98,22 @@ struct GameSummaryView: View {
             }
             .foregroundStyle(CS.brand)
             Spacer()
-            Button { exportCSV() } label: {
-                Text("Export")
-                    .font(.csUI(14, weight: .semibold))
+            Menu {
+                Button {
+                    exportCSV()
+                } label: {
+                    Label("Export CSV", systemImage: "square.and.arrow.up")
+                }
+                Button(role: .destructive) {
+                    showingDeleteConfirm = true
+                } label: {
+                    Label("Delete game", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(CS.brand)
+                    .frame(width: 32, height: 32)
             }
         }
         .padding(.horizontal, 16)
@@ -255,8 +267,21 @@ struct GameSummaryView: View {
             opponentName: game.opponentName,
             date: game.date
         ) {
-            shareURL = url
-            showingShare = true
+            ShareSheet.present(items: [url])
         }
+    }
+
+    // MARK: - Delete
+
+    private func deleteGame() {
+        let gameID = game.id
+        let predicate = #Predicate<StatEvent> { $0.gameID == gameID }
+        let descriptor = FetchDescriptor<StatEvent>(predicate: predicate)
+        if let events = try? modelContext.fetch(descriptor) {
+            for event in events { modelContext.delete(event) }
+        }
+        modelContext.delete(game)
+        try? modelContext.save()
+        dismiss()
     }
 }

@@ -5,6 +5,7 @@ import SwiftData
 /// a teams strip and recent-games list fill the rest. First launch (no teams)
 /// shows a welcome state instead.
 struct HomeView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \Team.name) private var myTeams: [Team]
     @Query(filter: #Predicate<Game> { $0.isComplete }, sort: \Game.date, order: .reverse)
     private var completedGames: [Game]
@@ -12,6 +13,7 @@ struct HomeView: View {
     @State private var showingGameSetup = false
     @State private var showingSettings = false
     @State private var openGame: Game?
+    @State private var pendingDeleteGame: Game?
 
     var body: some View {
         NavigationStack {
@@ -36,7 +38,38 @@ struct HomeView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
+            .alert(
+                "Delete game?",
+                isPresented: Binding(
+                    get: { pendingDeleteGame != nil },
+                    set: { if !$0 { pendingDeleteGame = nil } }
+                ),
+                presenting: pendingDeleteGame
+            ) { game in
+                Button("Delete", role: .destructive) {
+                    deleteGame(game)
+                    pendingDeleteGame = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingDeleteGame = nil
+                }
+            } message: { game in
+                Text("This permanently removes the game vs \(game.opponentName) and all of its stats. This cannot be undone.")
+            }
         }
+    }
+
+    // MARK: - Delete
+
+    private func deleteGame(_ game: Game) {
+        let gameID = game.id
+        let predicate = #Predicate<StatEvent> { $0.gameID == gameID }
+        let descriptor = FetchDescriptor<StatEvent>(predicate: predicate)
+        if let events = try? modelContext.fetch(descriptor) {
+            for event in events { modelContext.delete(event) }
+        }
+        modelContext.delete(game)
+        try? modelContext.save()
     }
 
     // MARK: - Chrome
@@ -218,7 +251,11 @@ struct HomeView: View {
             }
             VStack(spacing: 6) {
                 ForEach(completedGames.prefix(8)) { game in
-                    GameResultRow(game: game) { openGame = game }
+                    SwipeToDeleteRow {
+                        GameResultRow(game: game) { openGame = game }
+                    } onDelete: {
+                        pendingDeleteGame = game
+                    }
                 }
             }
         }
